@@ -462,16 +462,16 @@ html[lang="te"] .hero-cap {
   }
 }
 
-.hero.is-reduced .hero-canvas,
-.hero.is-reduced .hero-cap,
-.hero.is-reduced .hero-cue {
+.hero.is-flat .hero-canvas,
+.hero.is-flat .hero-cap,
+.hero.is-flat .hero-cue {
   display: none;
 }
-.hero.is-reduced .hero-word-wrap {
+.hero.is-flat .hero-word-wrap {
   opacity: 0.1;
 }
-.hero.is-reduced .hero-photo,
-.hero.is-reduced .hero-final > * {
+.hero.is-flat .hero-photo,
+.hero.is-flat .hero-final > * {
   opacity: 1;
   visibility: visible;
 }
@@ -1264,14 +1264,10 @@ html[lang="te"] .footer-line {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .marquee-track {
+  .marquee-track,
+  .plate-ring,
+  .hero-cue i,
+  .box-count {
     animation: none;
   }
 }

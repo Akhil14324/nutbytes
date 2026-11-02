@@ -6,29 +6,30 @@ import { Suspense, useEffect, useMemo, useRef, type MutableRefObject, type RefOb
 import manifest from "../public/nuts/manifest.json";
 
 /* ------------------------------------------------------------------ *
- *  The nuts are real studio photographs, cut out and flown through a
- *  3D scene as textured cards. Drop a new sheet through
- *  `scripts/cut-nuts.mjs <type> <sheet>` and it is picked up here.
+ *  The nuts are real studio photographs, cut out and packed into one
+ *  texture atlas by `scripts/build-nuts.mjs`. Each one is flown through
+ *  the scene as a textured card, all in a single draw call.
  * ------------------------------------------------------------------ */
 
-type Cut = { file: string; w: number; h: number };
-const SHEETS = manifest as Record<string, Cut[]>;
+type Cut = { u: number; v: number; uw: number; vh: number; aspect: number };
+const ATLAS = manifest as { atlas: string; w: number; h: number; types: Record<string, Cut[]> };
 
-// relative share of the ball and world width (min, max) of each nut type
+// share of the ball, and the world length of the longest edge (min, max)
 const TYPES: { key: string; share: number; size: [number, number] }[] = [
-  { key: "cashew", share: 3, size: [0.58, 0.74] },
-  { key: "almond", share: 3, size: [0.5, 0.64] },
-  { key: "walnut", share: 2, size: [0.62, 0.78] },
-  { key: "pista", share: 2, size: [0.34, 0.44] },
-  { key: "peanut", share: 2, size: [0.36, 0.46] },
-  { key: "seed", share: 2, size: [0.32, 0.4] },
-  { key: "raisin", share: 2, size: [0.24, 0.32] },
-  { key: "fig", share: 1.5, size: [0.5, 0.62] },
-  { key: "date", share: 1.5, size: [0.5, 0.62] },
-  { key: "apricot", share: 1, size: [0.48, 0.6] },
+  { key: "cashew", share: 3, size: [0.62, 0.78] },
+  { key: "almond", share: 3, size: [0.62, 0.78] },
+  { key: "walnut", share: 1.6, size: [0.78, 0.96] },
+  { key: "pista", share: 2.6, size: [0.5, 0.62] },
+  { key: "peanut", share: 2, size: [0.52, 0.66] },
+  { key: "seed", share: 2.2, size: [0.46, 0.58] },
+  { key: "raisin", share: 3, size: [0.36, 0.48] },
+  { key: "prune", share: 1.4, size: [0.55, 0.7] },
+  { key: "fig", share: 1.6, size: [0.72, 0.9] },
+  { key: "date", share: 1.5, size: [0.78, 0.96] },
+  { key: "apricot", share: 1.2, size: [0.7, 0.86] },
 ];
 
-const TOTAL = 190;
+const TOTAL = 230;
 const BALL_R = 1.28;
 
 function rng(seed: number) {
@@ -42,9 +43,9 @@ function rng(seed: number) {
   };
 }
 
-type Variant = { file: string; aspect: number; count: number };
 type Inst = {
-  variant: number;
+  cut: Cut;
+  length: number;
   start: THREE.Vector3;
   target: THREE.Vector3;
   targetQ: THREE.Quaternion;
@@ -56,16 +57,15 @@ type Inst = {
   delay: number;
   phase: number;
   swirl: number;
-  scale: number;
   load: number;
 };
 
-function plan(vw: number, vh: number, ballScale: number) {
+function plan(vw: number, vh: number, ballScale: number): Inst[] {
   const r = rng(20261102);
-  const present = TYPES.filter((t) => SHEETS[t.key]?.length);
+  const present = TYPES.filter((t) => ATLAS.types[t.key]?.length);
   const shareSum = present.reduce((n, t) => n + t.share, 0) || 1;
 
-  // fibonacci points over the sphere, shuffled so types mix
+  // fibonacci points over the sphere, shuffled so the types mix evenly
   const pts: THREE.Vector3[] = [];
   const ga = Math.PI * (3 - Math.sqrt(5));
   for (let i = 0; i < TOTAL; i++) {
@@ -78,16 +78,11 @@ function plan(vw: number, vh: number, ballScale: number) {
     [pts[i], pts[j]] = [pts[j], pts[i]];
   }
 
-  const variants: Variant[] = [];
-  const insts: Inst[] = [];
+  const out: Inst[] = [];
   let n = 0;
-
   present.forEach((t, ti) => {
-    const cuts = SHEETS[t.key];
+    const cuts = ATLAS.types[t.key];
     const count = ti === present.length - 1 ? TOTAL - n : Math.round((t.share / shareSum) * TOTAL);
-    const base = variants.length;
-    cuts.forEach((c) => variants.push({ file: c.file, aspect: c.h / c.w, count: 0 }));
-
     for (let i = 0; i < count && n < TOTAL; i++, n++) {
       const normal = pts[n].clone();
       const target = normal.clone().multiplyScalar(BALL_R * ballScale * (0.97 + r() * 0.08));
@@ -97,16 +92,10 @@ function plan(vw: number, vh: number, ballScale: number) {
       const targetQ = new THREE.Quaternion().setFromRotationMatrix(
         new THREE.Matrix4().makeBasis(tangent, bit, normal)
       );
-
-      const v = base + (i % cuts.length);
-      variants[v].count++;
-      insts.push({
-        variant: v,
-        start: new THREE.Vector3(
-          (r() - 0.5) * vw * 1.15,
-          (r() - 0.5) * vh * 1.15,
-          -3 + r() * 4.4
-        ),
+      out.push({
+        cut: cuts[Math.floor(r() * cuts.length)],
+        length: (t.size[0] + r() * (t.size[1] - t.size[0])) * Math.max(0.72, ballScale),
+        start: new THREE.Vector3((r() - 0.5) * vw * 1.15, (r() - 0.5) * vh * 1.15, -3 + r() * 4.4),
         target,
         targetQ,
         tiltX: (r() - 0.5) * 0.9,
@@ -117,12 +106,11 @@ function plan(vw: number, vh: number, ballScale: number) {
         delay: r(),
         phase: r() * 6.28,
         swirl: (r() - 0.5) * 3.4,
-        scale: (t.size[0] + r() * (t.size[1] - t.size[0])) * Math.max(0.72, ballScale),
         load: r(),
       });
     }
   });
-  return { variants, insts };
+  return out;
 }
 
 const _dummy = new THREE.Object3D();
@@ -145,49 +133,80 @@ const easeOutBack = (t: number) => {
 function Nuts({
   progress,
   host,
+  calm,
 }: {
   progress: MutableRefObject<number>;
   host: RefObject<HTMLElement | null>;
+  calm: boolean;
 }) {
   const { viewport, size, gl } = useThree();
   const group = useRef<THREE.Group>(null);
   const core = useRef<THREE.Mesh>(null);
-  const meshes = useRef<(THREE.InstancedMesh | null)[]>([]);
-  const mats = useRef<(THREE.MeshLambertMaterial | null)[]>([]);
+  const mesh = useRef<THREE.InstancedMesh>(null);
   const smoothP = useRef(0);
 
   const ballScale = Math.min(1, (viewport.width * 0.82) / (BALL_R * 2));
-  const { variants, insts } = useMemo(
+  const insts = useMemo(
     () => plan(viewport.width, viewport.height, ballScale),
     [viewport.width, viewport.height, ballScale]
   );
 
-  const textures = useLoader(THREE.TextureLoader, variants.map((v) => v.file));
+  const atlas = useLoader(THREE.TextureLoader, ATLAS.atlas);
   useEffect(() => {
-    const aniso = Math.min(8, gl.capabilities.getMaxAnisotropy());
-    textures.forEach((t) => {
-      t.colorSpace = THREE.SRGBColorSpace;
-      t.anisotropy = aniso;
-      t.needsUpdate = true;
-    });
-  }, [textures, gl]);
+    // configuring a loaded three.js texture is a legitimate mutation
+    /* eslint-disable react-hooks/immutability */
+    atlas.colorSpace = THREE.SRGBColorSpace;
+    atlas.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
+    atlas.needsUpdate = true;
+    /* eslint-enable react-hooks/immutability */
+  }, [atlas, gl]);
 
-  const geos = useMemo(() => variants.map((v) => new THREE.PlaneGeometry(1, v.aspect)), [variants]);
+  // one card, one material; each instance picks its nut from the atlas
+  const geometry = useMemo(() => {
+    const g = new THREE.PlaneGeometry(1, 1);
+    const rects = new Float32Array(insts.length * 4);
+    insts.forEach((it, i) => {
+      rects[i * 4] = it.cut.u;
+      rects[i * 4 + 1] = it.cut.v;
+      rects[i * 4 + 2] = it.cut.uw;
+      rects[i * 4 + 3] = it.cut.vh;
+    });
+    g.setAttribute("aUvRect", new THREE.InstancedBufferAttribute(rects, 4));
+    return g;
+  }, [insts]);
+
+  const material = useMemo(() => {
+    const m = new THREE.MeshLambertMaterial({
+      map: atlas,
+      side: THREE.DoubleSide,
+      alphaTest: 0.5,
+      toneMapped: false,
+    });
+    m.alphaToCoverage = true;
+    m.onBeforeCompile = (shader) => {
+      shader.vertexShader =
+        "attribute vec4 aUvRect;\n" +
+        shader.vertexShader.replace(
+          "#include <uv_vertex>",
+          "#include <uv_vertex>\n#ifdef USE_MAP\n  vMapUv = vMapUv * aUvRect.zw + aUvRect.xy;\n#endif"
+        );
+    };
+    return m;
+  }, [atlas]);
 
   // a little brightness variation so no two cards look identical
   useEffect(() => {
+    const m = mesh.current;
+    if (!m) return;
     const c = new THREE.Color();
     const r = rng(7);
-    meshes.current.forEach((m, vi) => {
-      if (!m) return;
-      for (let i = 0; i < variants[vi].count; i++) {
-        const k = 0.9 + r() * 0.16;
-        c.setRGB(k, k * (0.98 + r() * 0.03), k * (0.96 + r() * 0.05));
-        m.setColorAt(i, c);
-      }
-      if (m.instanceColor) m.instanceColor.needsUpdate = true;
-    });
-  }, [variants]);
+    for (let i = 0; i < insts.length; i++) {
+      const k = 0.92 + r() * 0.14;
+      c.setRGB(k, k, k);
+      m.setColorAt(i, c);
+    }
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+  }, [insts]);
 
   // report the assembled ball's pixel size so the laddu photo can match it
   useEffect(() => {
@@ -197,18 +216,21 @@ function Nuts({
     el.style.setProperty("--ball", `${Math.round(d)}px`);
   }, [host, viewport.height, size.height, ballScale]);
 
-  const floatMul = ballScale < 0.9 ? 0.6 : 0.8;
+  const floatMul = ballScale < 0.9 ? 0.62 : 0.82;
+  const drift = calm ? 0.25 : 1;
   const warm = useMemo(() => new THREE.Color(), []);
 
   useFrame((state, dt) => {
+    const m = mesh.current;
+    if (!m) return;
     const t = state.clock.elapsedTime;
     smoothP.current += (progress.current - smoothP.current) * Math.min(1, dt * 4.5);
     const P = smoothP.current;
 
     const g = group.current;
     if (g) {
-      g.rotation.y = Math.max(0, P - 0.2) * 4.4 + t * 0.06 * smooth(0.45, 0.7, P) + state.pointer.x * 0.12;
-      g.rotation.x = 0.2 * smooth(0.3, 0.6, P) + state.pointer.y * -0.08;
+      g.rotation.y = Math.max(0, P - 0.2) * 4.4 + t * 0.06 * drift * smooth(0.45, 0.7, P) + state.pointer.x * 0.12 * drift;
+      g.rotation.x = 0.2 * smooth(0.3, 0.6, P) + state.pointer.y * -0.08 * drift;
       g.scale.setScalar(1 + 0.03 * Math.sin(smooth(0.5, 0.62, P) * Math.PI));
     }
 
@@ -220,14 +242,11 @@ function Nuts({
 
     // glaze: the cards warm to a golden tone as the ball forms
     const glaze = smooth(0.52, 0.72, P);
-    warm.setRGB(1 - glaze * 0.04, 1 - glaze * 0.1, 1 - glaze * 0.24);
-    mats.current.forEach((m) => m?.color.copy(warm));
+    warm.setRGB(1 - glaze * 0.03, 1 - glaze * 0.08, 1 - glaze * 0.2);
+    material.color.copy(warm);
 
-    const counters = variants.map(() => 0);
     for (let n = 0; n < insts.length; n++) {
       const it = insts[n];
-      const mesh = meshes.current[it.variant];
-      if (!mesh) continue;
 
       const lt = Math.min(1, Math.max(0, (t - 0.15 - it.load * 0.9) / 0.9));
       const loadS = lt <= 0 ? 0 : easeOutBack(lt);
@@ -236,14 +255,14 @@ function Nuts({
       const e = easeInOut(u);
 
       _v.copy(it.start);
-      _v.x += Math.sin(t * 0.32 * it.speed * 2 + it.phase) * 0.28;
-      _v.y += Math.cos(t * 0.27 * it.speed * 2 + it.phase * 1.3) * 0.3 + P * it.start.z * 0.55;
-      _v.z += Math.sin(t * 0.21 + it.phase) * 0.22;
+      _v.x += Math.sin(t * 0.32 * it.speed * 2 + it.phase) * 0.28 * drift;
+      _v.y += Math.cos(t * 0.27 * it.speed * 2 + it.phase * 1.3) * 0.3 * drift + P * it.start.z * 0.55;
+      _v.z += Math.sin(t * 0.21 + it.phase) * 0.22 * drift;
       _v.lerp(it.target, e);
       if (e > 0 && e < 1) _v.applyAxisAngle(_yAxis, Math.sin(e * Math.PI) * it.swirl * 0.5);
 
       // cards stay mostly face-on so they never turn edge-on and vanish
-      const wob = 1 - e;
+      const wob = (1 - e) * drift;
       _e.set(
         it.tiltX + Math.sin(t * 0.35 * it.speed + it.phase) * 0.45 * wob,
         it.tiltY + Math.cos(t * 0.3 * it.speed + it.phase * 1.3) * 0.45 * wob,
@@ -253,44 +272,29 @@ function Nuts({
       _q.setFromEuler(_e);
       _q.slerp(it.targetQ, e);
 
+      // longest edge of the nut = it.length
+      const k = it.length * loadS * (floatMul + (1.22 - floatMul) * e);
+      const a = it.cut.aspect;
       _dummy.position.copy(_v);
       _dummy.quaternion.copy(_q);
-      _dummy.scale.setScalar(it.scale * loadS * (floatMul + (1.5 - floatMul) * e));
+      _dummy.scale.set(a > 1 ? k / a : k, a > 1 ? k : k * a, 1);
       _dummy.updateMatrix();
-      mesh.setMatrixAt(counters[it.variant]++, _dummy.matrix);
+      m.setMatrixAt(n, _dummy.matrix);
     }
-    meshes.current.forEach((m) => {
-      if (m) m.instanceMatrix.needsUpdate = true;
-    });
+    m.instanceMatrix.needsUpdate = true;
   });
 
   return (
     <group ref={group}>
       <mesh ref={core} visible={false}>
         <sphereGeometry args={[BALL_R * ballScale * 0.84, 48, 32]} />
-        <meshStandardMaterial color="#9c6a34" roughness={0.45} metalness={0} />
+        <meshStandardMaterial color="#7a4f28" roughness={0.5} metalness={0} />
       </mesh>
-      {variants.map((v, i) => (
-        <instancedMesh
-          key={v.file}
-          ref={(m) => {
-            meshes.current[i] = m;
-          }}
-          args={[geos[i], undefined, Math.max(1, v.count)]}
-          frustumCulled={false}
-        >
-          <meshLambertMaterial
-            ref={(m) => {
-              mats.current[i] = m;
-            }}
-            map={textures[i]}
-            side={THREE.DoubleSide}
-            alphaTest={0.5}
-            alphaToCoverage
-            toneMapped={false}
-          />
-        </instancedMesh>
-      ))}
+      <instancedMesh
+        ref={mesh}
+        args={[geometry, material, insts.length]}
+        frustumCulled={false}
+      />
     </group>
   );
 }
@@ -299,10 +303,12 @@ export default function NutScene({
   progress,
   host,
   active,
+  calm,
 }: {
   progress: MutableRefObject<number>;
   host: RefObject<HTMLElement | null>;
   active: boolean;
+  calm: boolean;
 }) {
   return (
     <Canvas
@@ -316,7 +322,7 @@ export default function NutScene({
       <ambientLight intensity={2.25} />
       <directionalLight position={[3, 4, 6]} intensity={1.5} color="#fff4e4" />
       <Suspense fallback={null}>
-        <Nuts progress={progress} host={host} />
+        <Nuts progress={progress} host={host} calm={calm} />
       </Suspense>
     </Canvas>
   );

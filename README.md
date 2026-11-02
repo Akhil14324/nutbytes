@@ -24,14 +24,16 @@ No backend or database. Orders are sent as a pre-filled WhatsApp message.
 - `public/nuts/` nut cutouts + `manifest.json`
 - `public/img/` product, gift and logo images
 
-## Adding a nut to the 3D scene
-Shoot or generate a flat-lay photo of one nut type on a flat magenta background
-(nuts spaced apart, not touching), then:
+## The nuts in the 3D scene
+The nuts are real photos, cut out and packed into one texture (`public/nuts/atlas.webp`).
+To add or change a nut, put a flat-lay photo on a flat magenta backdrop (nuts spaced
+apart, not touching) in `assets/nuts/<type>-sheet.jpg` (a second sheet: `<type>-sheet-2.jpg`), then:
 ```bash
-node scripts/cut-nuts.mjs <type> path/to/<type>-sheet.jpg
+node scripts/build-nuts.mjs
 ```
-Supported types: cashew, almond, walnut, pista, peanut, seed, raisin, fig, date, apricot.
-Commit the new files in `public/nuts/`.
+Current types: cashew, almond, walnut, pista, peanut, seed, raisin, prune, fig, date, apricot.
+A new type also needs a line in `TYPES` in `components/NutScene.tsx`.
+The `assets/` folder is not in this repo; commit only the regenerated files in `public/nuts/`.
 
 ## Prices
 Prices are intentionally not shown. The cart says "Price confirmed on WhatsApp".

@@ -3,93 +3,98 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
 import { goTo } from "@/lib/smooth";
 import { ArrowIcon } from "./Icons";
 
 const NutScene = dynamic(() => import("./NutScene"), { ssr: false });
 
+function hasWebGL() {
+  try {
+    const c = document.createElement("canvas");
+    return !!(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
+
 export default function Hero() {
   const { t } = useLang();
   const root = useRef<HTMLElement>(null);
   const progress = useRef(0);
   const [active, setActive] = useState(true);
-  const [reduced, setReduced] = useState(false);
+  // the page cannot show the 3D scene at all (no WebGL): fall back to the photo
+  const [flat, setFlat] = useState(false);
+  // people who asked for less motion keep the scroll-driven story,
+  // but the idle drifting and tilting is turned way down
+  const [calm, setCalm] = useState(false);
 
   useGSAP(
     () => {
-      const mm = gsap.matchMedia();
+      setCalm(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        setReduced(false);
-        const tl = gsap.timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: {
-            id: "hero",
-            trigger: root.current,
-            start: "top top",
-            end: "+=560%",
-            pin: true,
-            scrub: 0.7,
-            anticipatePin: 1,
-            onUpdate: (self) => {
-              progress.current = self.progress;
-            },
-            // pause rendering only once the hero has been scrolled past
-            onLeave: () => setActive(false),
-            onEnterBack: () => setActive(true),
+      if (!hasWebGL()) {
+        setFlat(true);
+        return;
+      }
+
+      const tl = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          id: "hero",
+          trigger: root.current,
+          start: "top top",
+          end: "+=560%",
+          pin: true,
+          scrub: 0.7,
+          anticipatePin: 1,
+          onUpdate: (self) => {
+            progress.current = self.progress;
           },
-        });
-
-        // opening: wordmark and cue step aside as the nuts start to travel
-        tl.to(".hero-cue", { autoAlpha: 0, duration: 0.05 }, 0.02)
-          .to(".hero-word", { scale: 1.1, autoAlpha: 0, duration: 0.2 }, 0.14)
-          .to(".hero-tag", { autoAlpha: 0, y: -12, duration: 0.08 }, 0.1);
-
-        // three short captions
-        const cap = (sel: string, a: number, b: number) =>
-          tl
-            .fromTo(sel, { autoAlpha: 0, y: 26 }, { autoAlpha: 1, y: 0, duration: 0.06 }, a)
-            .to(sel, { autoAlpha: 0, y: -18, duration: 0.05 }, b);
-        cap(".cap-1", 0.07, 0.17);
-        cap(".cap-2", 0.3, 0.44);
-        cap(".cap-3", 0.5, 0.63);
-
-        // the ball becomes the real laddu
-        tl.to(".hero-canvas", { autoAlpha: 0, scale: 0.94, duration: 0.12 }, 0.74)
-          .fromTo(
-            ".hero-photo",
-            { autoAlpha: 0, scale: 0.86, rotate: -8 },
-            { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.14 },
-            0.7
-          )
-          .fromTo(".hero-final > *", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.08, stagger: 0.04 }, 0.82)
-          .set({}, {}, 1);
-
-        return () => setReduced(false);
+          // pause rendering only once the hero has been scrolled past
+          onLeave: () => setActive(false),
+          onEnterBack: () => setActive(true),
+        },
       });
 
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        setReduced(true);
-        progress.current = 0.8;
-        ScrollTrigger.create({ trigger: root.current, onLeave: () => setActive(false), onEnterBack: () => setActive(true) });
-      });
+      // opening: wordmark and cue step aside as the nuts start to travel
+      tl.to(".hero-cue", { autoAlpha: 0, duration: 0.05 }, 0.02)
+        .to(".hero-word", { scale: 1.1, autoAlpha: 0, duration: 0.2 }, 0.14)
+        .to(".hero-tag", { autoAlpha: 0, y: -12, duration: 0.08 }, 0.1);
 
-      return () => mm.revert();
+      // three short captions
+      const cap = (sel: string, a: number, b: number) =>
+        tl
+          .fromTo(sel, { autoAlpha: 0, y: 26 }, { autoAlpha: 1, y: 0, duration: 0.06 }, a)
+          .to(sel, { autoAlpha: 0, y: -18, duration: 0.05 }, b);
+      cap(".cap-1", 0.07, 0.17);
+      cap(".cap-2", 0.3, 0.44);
+      cap(".cap-3", 0.5, 0.63);
+
+      // the ball becomes the real laddu
+      tl.to(".hero-canvas", { autoAlpha: 0, scale: 0.94, duration: 0.12 }, 0.74)
+        .fromTo(
+          ".hero-photo",
+          { autoAlpha: 0, scale: 0.86, rotate: -8 },
+          { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.14 },
+          0.7
+        )
+        .fromTo(".hero-final > *", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.08, stagger: 0.04 }, 0.82)
+        .set({}, {}, 1);
     },
     { scope: root }
   );
 
   return (
-    <section ref={root} className={`hero${reduced ? " is-reduced" : ""}`} id="hero" aria-label="NutBytes">
+    <section ref={root} className={`hero${flat ? " is-flat" : ""}`} id="hero" aria-label="NutBytes">
       <div className="hero-word-wrap">
         <h1 className="hero-word">NutBytes</h1>
         <p className="hero-tag">{t("hero.tag")}</p>
       </div>
 
       <div className="hero-canvas" aria-hidden>
-        <NutScene progress={progress} host={root} active={active && !reduced} />
+        {!flat && <NutScene progress={progress} host={root} active={active} calm={calm} />}
       </div>
 
       <div className="hero-photo" aria-hidden>
