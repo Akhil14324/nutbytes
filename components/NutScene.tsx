@@ -45,9 +45,18 @@ function rng(seed: number) {
   };
 }
 
+// every sprite carries a baked shadow margin (see scripts/build-nuts.mjs), so the card is
+// a little bigger than the nut it shows
+const SPRITE_BOOST = 1.1;
+// how far, at the rim of the ball, a card leans toward the viewer instead of lying flat on
+// the surface (flat cards at the rim turn edge-on and read as thin slivers of paper)
+const LEAN = 0.95;
+
 type Inst = {
   cut: Cut;
   length: number;
+  /** where on the ball this card sits, as a direction from its centre */
+  normal: THREE.Vector3;
   start: THREE.Vector3;
   target: THREE.Vector3;
   targetQ: THREE.Quaternion;
@@ -97,7 +106,8 @@ function plan(vw: number, vh: number, ballScale: number): Inst[] {
       );
       out.push({
         cut: cuts[Math.floor(r() * cuts.length)],
-        length: (t.size[0] + r() * (t.size[1] - t.size[0])) * Math.max(0.72, ballScale),
+        length: (t.size[0] + r() * (t.size[1] - t.size[0])) * Math.max(0.72, ballScale) * SPRITE_BOOST,
+        normal,
         start: new THREE.Vector3((r() - 0.5) * vw * 1.15, (r() - 0.5) * vh * 1.15, -3 + r() * 4.4),
         target,
         targetQ,
@@ -122,6 +132,11 @@ const _e = new THREE.Euler();
 const _v = new THREE.Vector3();
 const _p = new THREE.Vector3();
 const _yAxis = new THREE.Vector3(0, 1, 0);
+const _cam = new THREE.Vector3();
+const _lean = new THREE.Vector3();
+const _align = new THREE.Quaternion();
+const _gq = new THREE.Quaternion();
+const _leanQ = new THREE.Quaternion();
 
 const smooth = (a: number, b: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -149,7 +164,8 @@ function Nuts({
   const mesh = useRef<THREE.InstancedMesh>(null);
   const smoothP = useRef(0);
 
-  const ballScale = Math.min(1, (viewport.width * 0.82) / (BALL_R * 2));
+  // (a little narrower than the screen: the cards stick out past the ball's own radius)
+  const ballScale = Math.min(1, (viewport.width * 0.72) / (BALL_R * 2));
   const insts = useMemo(
     () => plan(viewport.width, viewport.height, ballScale),
     [viewport.width, viewport.height, ballScale]
@@ -176,10 +192,13 @@ function Nuts({
     return g;
   }, [insts]);
 
+  // 0 while the nuts drift about, 1 once they have formed the ball (drives the lighting)
+  const ballMix = useMemo(() => ({ value: 0 }), []);
+
   const material = useMemo(() => {
     // soft alpha blending gives smooth, anti-aliased edges on every device.
     // The cards are sorted back-to-front each frame (see useFrame) so they layer correctly.
-    const m = new THREE.MeshLambertMaterial({
+    const m = new THREE.MeshBasicMaterial({
       map: atlas,
       side: THREE.DoubleSide,
       transparent: true,
@@ -188,15 +207,46 @@ function Nuts({
       toneMapped: false,
     });
     m.onBeforeCompile = (shader) => {
+      shader.uniforms.uBall = ballMix;
       shader.vertexShader =
-        "attribute vec4 aUvRect;\n" +
+        "attribute vec4 aUvRect;\nvarying vec3 vBallN;\n" +
         shader.vertexShader.replace(
           "#include <uv_vertex>",
-          "#include <uv_vertex>\n#ifdef USE_MAP\n  vMapUv = vMapUv * aUvRect.zw + aUvRect.xy;\n#endif"
+          [
+            "#include <uv_vertex>",
+            "#ifdef USE_MAP",
+            "  vMapUv = vMapUv * aUvRect.zw + aUvRect.xy;",
+            "#endif",
+            // which way the ball's surface faces where this card sits (view space)
+            "#ifdef USE_INSTANCING",
+            "  vBallN = normalize((modelViewMatrix * vec4(instanceMatrix[3].xyz, 0.0)).xyz);",
+            "#else",
+            "  vBallN = vec3(0.0, 0.0, 1.0);",
+            "#endif",
+          ].join("\n")
+        );
+      // Light the ball like one solid sphere, not like a heap of flat pictures: the cards
+      // share one light and darken toward the rim. (No per-card highlight: it is one value
+      // for a whole card, so on a big nut it reads as a pale, see-through veil.)
+      shader.fragmentShader =
+        "varying vec3 vBallN;\nuniform float uBall;\n" +
+        shader.fragmentShader.replace(
+          "#include <opaque_fragment>",
+          [
+            "{",
+            "  vec3 N = normalize(vBallN);",
+            "  vec3 L = normalize(vec3(-0.5, 0.62, 0.62));",
+            "  float key = smoothstep(-0.65, 0.95, dot(N, L));",
+            "  float limb = mix(0.62, 1.0, smoothstep(0.02, 0.62, N.z));",
+            "  float shade = (0.58 + 0.58 * key) * limb;",
+            "  outgoingLight *= mix(1.0, shade, uBall);",
+            "}",
+            "#include <opaque_fragment>",
+          ].join("\n")
         );
     };
     return m;
-  }, [atlas]);
+  }, [atlas, ballMix]);
 
   // working buffers: cards are rewritten back-to-front every frame
   const buf = useMemo(() => {
@@ -256,6 +306,9 @@ function Nuts({
     material.color.copy(warm);
 
     if (g) g.updateMatrix();
+    // the viewer's direction, in the ball's own frame
+    _cam.set(0, 0, 1).applyQuaternion(_gq.copy(g ? g.quaternion : _gq.identity()).invert());
+    ballMix.value = smooth(0.3, 0.62, P);
     for (let n = 0; n < insts.length; n++) {
       const it = insts[n];
 
@@ -281,7 +334,13 @@ function Nuts({
         "XYZ"
       );
       _q.setFromEuler(_e);
-      _q.slerp(it.targetQ, e);
+      if (e > 0.001) {
+        // on the ball a card leans from the surface toward the viewer (see LEAN)
+        _lean.copy(it.normal).addScaledVector(_cam, LEAN).normalize();
+        _align.setFromUnitVectors(it.normal, _lean);
+        _leanQ.copy(it.targetQ).premultiply(_align);
+        _q.slerp(_leanQ, e);
+      }
 
       // longest edge of the nut = it.length
       const k = it.length * loadS * (floatMul + (1.22 - floatMul) * e);
@@ -352,8 +411,6 @@ export default function NutScene({
       frameloop={active ? "always" : "never"}
       style={{ background: "transparent" }}
     >
-      <ambientLight intensity={2.25} />
-      <directionalLight position={[3, 4, 6]} intensity={1.5} color="#fff4e4" />
       <Suspense fallback={null}>
         <Nuts progress={progress} host={host} calm={calm} />
       </Suspense>

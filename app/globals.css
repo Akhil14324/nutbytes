@@ -413,8 +413,43 @@ html[lang="te"] .hero-tag {
 .hero-canvas canvas {
   display: block;
 }
+.hero-ground {
+  /* soft shadow under the ball, so it sits on the page instead of floating on it */
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: calc(50% + var(--ball) * 0.5 - 3svh + var(--ball) * 0.05);
+  width: calc(var(--ball) * 0.78);
+  height: calc(var(--ball) * 0.12);
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(59, 42, 32, 0.3), rgba(59, 42, 32, 0) 68%);
+  filter: blur(7px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.hero-glow {
+  /* a warm flash of light that covers the swap from the ball to the real laddu */
+  position: absolute;
+  z-index: 2;
+  width: calc(var(--ball) * 1.9);
+  aspect-ratio: 1;
+  left: calc(50% - var(--ball) * 0.95);
+  top: calc(50% - var(--ball) * 0.95 - 3svh);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 224, 160, 0.5) 0%,
+    rgba(255, 214, 140, 0.26) 38%,
+    rgba(255, 214, 140, 0) 68%
+  );
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 .hero-photo {
-  --w: calc(var(--ball) * 1.36);
+  --w: min(calc(var(--ball) * 1.36), 92vw);
   position: absolute;
   z-index: 2;
   width: var(--w);
@@ -524,6 +559,8 @@ html[lang="te"] .hero-cap {
 }
 
 .hero.is-flat .hero-canvas,
+.hero.is-flat .hero-glow,
+.hero.is-flat .hero-ground,
 .hero.is-flat .hero-cap,
 .hero.is-flat .hero-cue {
   display: none;
@@ -1018,6 +1055,7 @@ html[lang="te"] .footer-line {
   right: 0;
   bottom: 0;
   width: min(460px, 100vw);
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -1177,6 +1215,7 @@ html[lang="te"] .footer-line {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  padding: 6px 22px 18px;
 }
 .foot-row .btn {
   padding-inline: 0.8em;
@@ -1263,7 +1302,7 @@ html[lang="te"] .footer-line {
     padding-bottom: 18px;
   }
   .menu-visual {
-    --d: min(58vw, 31svh);
+    --d: min(62vw, 35svh);
     height: auto;
     padding-block: 14px;
   }
@@ -1385,5 +1424,81 @@ html[lang="te"] .footer-line {
   }
   .hero-trust li {
     padding: 0 9px;
+  }
+}
+
+/* phones */
+@media (max-width: 560px) {
+  .drawer-foot {
+    padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+  .drawer-foot .form-note {
+    font-size: 0.8rem;
+  }
+  .lines,
+  .order-form {
+    padding-inline: 18px;
+  }
+  .foot-row {
+    padding-inline: 18px;
+  }
+  .site-header {
+    padding-inline: 14px;
+  }
+  .fab {
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (max-width: 560px) {
+  .gift-chip {
+    right: 1%;
+    bottom: -9%;
+    width: 31%;
+    border-width: 5px;
+  }
+  .footer {
+    padding-bottom: 104px;
+  }
+  .hero-actions .btn-lg {
+    width: min(100%, 320px);
+  }
+}
+
+/* very small / short screens: tighten the hero so nothing is pushed off */
+@media (max-height: 700px) {
+  .hero-front {
+    padding-bottom: 2svh;
+  }
+  .hero-word {
+    font-size: clamp(3.4rem, 16vw, 9rem);
+  }
+  .hero-tag {
+    margin-top: 2.4svh;
+    font-size: clamp(1.05rem, 2vw, 1.6rem);
+  }
+  .hero-trust {
+    margin-top: 1.4svh;
+  }
+}
+
+@media (max-width: 560px) {
+  /* a soft ivory halo behind the hero text so it stays readable over the nuts */
+  .hero-front::before {
+    content: "";
+    position: absolute;
+    inset: 12% -6% 8%;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(251, 247, 240, 0.92) 0%,
+      rgba(251, 247, 240, 0.78) 48%,
+      rgba(251, 247, 240, 0) 78%
+    );
   }
 }

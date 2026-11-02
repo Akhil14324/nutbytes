@@ -72,15 +72,22 @@ export default function Hero() {
       cap(".cap-2", 0.3, 0.44);
       cap(".cap-3", 0.5, 0.63);
 
-      // the ball becomes the real laddu
-      tl.to(".hero-canvas", { autoAlpha: 0, scale: 1.05, duration: 0.12 }, 0.74)
+      // the ball sits on a soft shadow while it forms
+      tl.fromTo(".hero-ground", { autoAlpha: 0, scaleX: 0.6 }, { autoAlpha: 1, scaleX: 1, duration: 0.14 }, 0.44)
+        .to(".hero-ground", { autoAlpha: 0, duration: 0.05 }, 0.77);
+
+      // the ball becomes the real laddu. A warm flash of light covers the swap, so the
+      // two pictures never sit on top of each other as a ghosted blend.
+      tl.fromTo(".hero-glow", { autoAlpha: 0, scale: 0.7 }, { autoAlpha: 1, scale: 1, duration: 0.06, ease: "power1.out" }, 0.7)
+        .to(".hero-canvas", { autoAlpha: 0, scale: 0.97, duration: 0.05, ease: "power1.in" }, 0.745)
         .fromTo(
           ".hero-photo",
-          { autoAlpha: 0, scale: 0.9, y: 18, filter: "blur(10px)" },
-          { autoAlpha: 1, scale: 1, y: 0, filter: "blur(0px)", duration: 0.14 },
-          0.72
+          { autoAlpha: 0, scale: 0.95, y: 14 },
+          { autoAlpha: 1, scale: 1, y: 0, duration: 0.1, ease: "power2.out" },
+          0.76
         )
-        .fromTo(".hero-final > *", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.08, stagger: 0.04 }, 0.82)
+        .to(".hero-glow", { autoAlpha: 0, scale: 1.12, duration: 0.09, ease: "power1.in" }, 0.79)
+        .fromTo(".hero-final > *", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.08, stagger: 0.04 }, 0.84)
         .set({}, {}, 1);
     },
     { scope: root }
@@ -111,9 +118,13 @@ export default function Hero() {
         {!flat && <NutScene progress={progress} host={root} active={active} calm={calm} />}
       </div>
 
+      <div className="hero-ground" aria-hidden />
+
       <div className="hero-photo" aria-hidden>
         <Image src="/img/hero-laddu.webp" alt="" width={1298} height={971} sizes="(max-width: 700px) 92vw, 760px" />
       </div>
+
+      <div className="hero-glow" aria-hidden />
 
       <div className="hero-caps" aria-live="polite">
         <p className="hero-cap cap-1">{t("hero.cap1")}</p>

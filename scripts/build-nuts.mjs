@@ -12,7 +12,8 @@ import path from "node:path";
 const SRC = "../assets/nuts";
 const OUT = "public/nuts";
 const CELL = 320;
-const PAD = 8; // transparent gutter inside each cell, stops mip-map bleeding
+const PAD = 6; // transparent gutter inside each cell, stops mip-map bleeding
+const SHADOW_PAD = 14; // room around each nut for its baked soft shadow
 const MAX_PER_TYPE = 8;
 const ATLAS_W = 3840;
 const ATLAS_H = 2560;
@@ -60,6 +61,57 @@ function softenEdge(px, w, h, passes) {
     a = u;
   }
   for (let i = 0; i < n; i++) px[i * 4 + 3] = Math.max(0, Math.min(255, Math.round((a[i] - 12) * 1.12)));
+}
+
+const ss = (a, b, x) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * Gives a flat cut-out some weight, so a pile of them reads as objects and not as paper:
+ *  - its rim is darkened a little (the edge of a rounded nut turns away from the light)
+ *  - a soft warm shadow is baked around it (contact shadow on whatever lies behind)
+ * Both are symmetric, so they stay right however the card is turned. The sprite grows by
+ * SHADOW_PAD on every side to hold the shadow. Returns { buf, w, h } (straight-alpha RGBA).
+ */
+async function bakeDepth(px, w, h) {
+  const M = SHADOW_PAD, W = w + 2 * M, H = h + 2 * M;
+  const plane = Buffer.alloc(W * H);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) plane[(y + M) * W + x + M] = px[(y * w + x) * 4 + 3];
+  // sharp may hand a grey image back with more than one channel; keep just the first of each pixel
+  const blurred = async (sigma) => {
+    const { data, info } = await sharp(plane, { raw: { width: W, height: H, channels: 1 } })
+      .blur(sigma)
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const flat = new Uint8Array(W * H);
+    for (let p = 0; p < W * H; p++) flat[p] = data[p * info.channels];
+    return flat;
+  };
+  const wide = await blurred(8);
+  const inner = await blurred(5);
+
+  const out = Buffer.alloc(W * H * 4);
+  const SH = [46, 28, 14]; // warm dark brown
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      const inside = x >= M && x < M + w && y >= M && y < M + h;
+      const si = ((y - M) * w + (x - M)) * 4;
+      const A = inside ? px[si + 3] / 255 : 0;
+      const ao = 0.66 + 0.34 * ss(0.42, 0.97, inner[i] / 255);
+      const sa = Math.min(1, (wide[i] / 255) * 1.7) * 0.3;
+      const oa = A + sa * (1 - A);
+      if (oa <= 0.002) continue;
+      for (let c = 0; c < 3; c++) {
+        const col = inside ? px[si + c] * ao : 0;
+        out[i * 4 + c] = Math.round((col * A + SH[c] * sa * (1 - A)) / oa);
+      }
+      out[i * 4 + 3] = Math.round(oa * 255);
+    }
+  }
+  return { buf: out, w: W, h: H };
 }
 
 /** Cut every nut out of one sheet. Returns [{ buf, w, h }] (RGBA buffers). */
@@ -224,26 +276,28 @@ const composites = [];
 const manifest = { atlas: "/nuts/atlas.webp", w: ATLAS_W, h: ATLAS_H, types: {} };
 for (let i = 0; i < sprites.length; i++) {
   const s = sprites[i];
-  const box = CELL - PAD * 2;
-  // fit the cell; small-source nuts are enlarged (up to 2.2x) so they stay smooth
+  // the nut itself fits the cell minus the gutter and the room its shadow needs
+  const box = CELL - PAD * 2 - SHADOW_PAD * 2;
+  // small-source nuts are enlarged (up to 2.2x) so they stay smooth
   const k = Math.min(2.2, box / Math.max(s.w, s.h));
   const w = Math.max(1, Math.round(s.w * k)), h = Math.max(1, Math.round(s.h * k));
-  const { data: px } = await sharp(s.buf, { raw: { width: s.w, height: s.h, channels: 4 } })
-    .resize(w, h, { kernel: "lanczos3" })
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
+  let img = sharp(s.buf, { raw: { width: s.w, height: s.h, channels: 4 } }).resize(w, h, { kernel: "lanczos3" });
+  // enlarging softens the photo; bring the texture (nut ridges, wrinkles) back
+  if (k > 1) img = img.sharpen({ sigma: 0.9, m1: 0.5, m2: 1.4 });
+  const { data: px } = await img.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   softenEdge(px, w, h, k > 1.2 ? 3 : 2);
-  const png = await sharp(px, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
-  const cx = (i % cols) * CELL + Math.round((CELL - w) / 2);
-  const cy = Math.floor(i / cols) * CELL + Math.round((CELL - h) / 2);
+  const { buf: shaped, w: sw, h: sh } = await bakeDepth(px, w, h);
+  const png = await sharp(shaped, { raw: { width: sw, height: sh, channels: 4 } }).png().toBuffer();
+  const cx = (i % cols) * CELL + Math.round((CELL - sw) / 2);
+  const cy = Math.floor(i / cols) * CELL + Math.round((CELL - sh) / 2);
   composites.push({ input: png, left: cx, top: cy });
   (manifest.types[s.type] ||= []).push({
     u: cx / ATLAS_W,
-    v: 1 - (cy + h) / ATLAS_H,
-    uw: w / ATLAS_W,
-    vh: h / ATLAS_H,
-    aspect: h / w,
+    v: 1 - (cy + sh) / ATLAS_H,
+    uw: sw / ATLAS_W,
+    vh: sh / ATLAS_H,
+    // aspect of the whole sprite (the nut plus the room around it for its shadow)
+    aspect: sh / sw,
   });
 }
 

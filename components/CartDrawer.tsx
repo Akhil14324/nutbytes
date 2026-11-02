@@ -185,19 +185,20 @@ export default function CartDrawer() {
               </label>
             </form>
 
+            <div className="foot-row">
+              <button className="btn btn-ghost" onClick={() => copy(true)}>
+                <InstagramIcon size={18} /> {t("cart.ig")}
+              </button>
+              <button className="btn btn-ghost" onClick={() => copy(false)}>
+                {t("cart.copy")}
+              </button>
+            </div>
+
             <div className="drawer-foot">
               <p className="form-note">{t("cart.note")}</p>
               <button className="btn btn-wa" onClick={order}>
                 <WhatsAppIcon size={20} /> {t("cart.order")}
               </button>
-              <div className="foot-row">
-                <button className="btn btn-ghost" onClick={() => copy(true)}>
-                  <InstagramIcon size={18} /> {t("cart.ig")}
-                </button>
-                <button className="btn btn-ghost" onClick={() => copy(false)}>
-                  {t("cart.copy")}
-                </button>
-              </div>
             </div>
           </>
         )}
