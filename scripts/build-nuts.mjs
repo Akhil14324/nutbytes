@@ -11,12 +11,56 @@ import path from "node:path";
 
 const SRC = "../assets/nuts";
 const OUT = "public/nuts";
-const CELL = 256;
+const CELL = 320;
 const PAD = 8; // transparent gutter inside each cell, stops mip-map bleeding
-const MAX_PER_TYPE = 10;
-const ATLAS_W = 4096;
-const ATLAS_H = 2048;
+const MAX_PER_TYPE = 8;
+const ATLAS_W = 3840;
+const ATLAS_H = 2560;
 const DEBUG = process.env.DEBUG_NUTS === "1";
+
+/**
+ * Smooth a sprite's alpha edge in place. First the nut's own colours are pushed a few
+ * pixels outward (so soft edge pixels never pick up black), then the alpha is blurred.
+ */
+function softenEdge(px, w, h, passes) {
+  const n = w * h;
+  const filled = new Uint8Array(n);
+  for (let i = 0; i < n; i++) filled[i] = px[i * 4 + 3] > 8 ? 1 : 0;
+  for (let it = 0; it < 4; it++) {
+    const next = filled.slice();
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (filled[i]) continue;
+        let r = 0, g = 0, b = 0, c = 0;
+        for (const j of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1]) {
+          if (j >= 0 && filled[j]) { r += px[j * 4]; g += px[j * 4 + 1]; b += px[j * 4 + 2]; c++; }
+        }
+        if (c) { px[i * 4] = r / c; px[i * 4 + 1] = g / c; px[i * 4 + 2] = b / c; next[i] = 1; }
+      }
+    }
+    filled.set(next);
+  }
+  // blur alpha with a small [1 2 1] kernel, a few passes
+  let a = new Float32Array(n);
+  for (let i = 0; i < n; i++) a[i] = px[i * 4 + 3];
+  for (let p = 0; p < passes; p++) {
+    const t = new Float32Array(n);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        t[i] = (a[x > 0 ? i - 1 : i] + 2 * a[i] + a[x < w - 1 ? i + 1 : i]) / 4;
+      }
+    const u = new Float32Array(n);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        u[i] = (t[y > 0 ? i - w : i] + 2 * t[i] + t[y < h - 1 ? i + w : i]) / 4;
+      }
+    a = u;
+  }
+  for (let i = 0; i < n; i++) px[i * 4 + 3] = Math.max(0, Math.min(255, Math.round((a[i] - 12) * 1.12)));
+}
 
 /** Cut every nut out of one sheet. Returns [{ buf, w, h }] (RGBA buffers). */
 async function cutSheet(file) {
@@ -181,12 +225,16 @@ const manifest = { atlas: "/nuts/atlas.webp", w: ATLAS_W, h: ATLAS_H, types: {} 
 for (let i = 0; i < sprites.length; i++) {
   const s = sprites[i];
   const box = CELL - PAD * 2;
-  const k = Math.min(1, box / Math.max(s.w, s.h));
+  // fit the cell; small-source nuts are enlarged (up to 2.2x) so they stay smooth
+  const k = Math.min(2.2, box / Math.max(s.w, s.h));
   const w = Math.max(1, Math.round(s.w * k)), h = Math.max(1, Math.round(s.h * k));
-  const png = await sharp(s.buf, { raw: { width: s.w, height: s.h, channels: 4 } })
+  const { data: px } = await sharp(s.buf, { raw: { width: s.w, height: s.h, channels: 4 } })
     .resize(w, h, { kernel: "lanczos3" })
-    .png()
-    .toBuffer();
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  softenEdge(px, w, h, k > 1.2 ? 3 : 2);
+  const png = await sharp(px, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
   const cx = (i % cols) * CELL + Math.round((CELL - w) / 2);
   const cy = Math.floor(i / cols) * CELL + Math.round((CELL - h) / 2);
   composites.push({ input: png, left: cx, top: cy });
@@ -203,7 +251,7 @@ fs.mkdirSync(OUT, { recursive: true });
 for (const f of fs.readdirSync(OUT)) if (/^cashew-\d+\.png$/.test(f)) fs.unlinkSync(path.join(OUT, f));
 await sharp({ create: { width: ATLAS_W, height: ATLAS_H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
   .composite(composites)
-  .webp({ quality: 90, alphaQuality: 100, effort: 5 })
+  .webp({ quality: 88, alphaQuality: 100, effort: 6 })
   .toFile(path.join(OUT, "atlas.webp"));
 fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify(manifest));
 console.log(`atlas: ${sprites.length} nuts, ${(fs.statSync(path.join(OUT, "atlas.webp")).size / 1024).toFixed(0)} KB`);

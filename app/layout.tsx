@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     description: "Traditional sweets with nuts and dry fruit in every bite. Order on WhatsApp.",
     url: "https://nutbytes.in",
     siteName: "NutBytes",
-    images: ["/img/hero-laddu.jpg"],
+    images: ["/img/og.jpg"],
     locale: "en_IN",
     type: "website",
   },

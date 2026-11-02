@@ -5,8 +5,9 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
+import { waLink } from "@/lib/site";
 import { goTo } from "@/lib/smooth";
-import { ArrowIcon } from "./Icons";
+import { ArrowIcon, WhatsAppIcon } from "./Icons";
 
 const NutScene = dynamic(() => import("./NutScene"), { ssr: false });
 
@@ -60,8 +61,7 @@ export default function Hero() {
 
       // opening: wordmark and cue step aside as the nuts start to travel
       tl.to(".hero-cue", { autoAlpha: 0, duration: 0.05 }, 0.02)
-        .to(".hero-word", { scale: 1.1, autoAlpha: 0, duration: 0.2 }, 0.14)
-        .to(".hero-tag", { autoAlpha: 0, y: -12, duration: 0.08 }, 0.1);
+        .to(".hero-front", { scale: 1.06, autoAlpha: 0, y: -24, duration: 0.2 }, 0.12);
 
       // three short captions
       const cap = (sel: string, a: number, b: number) =>
@@ -73,12 +73,12 @@ export default function Hero() {
       cap(".cap-3", 0.5, 0.63);
 
       // the ball becomes the real laddu
-      tl.to(".hero-canvas", { autoAlpha: 0, scale: 0.94, duration: 0.12 }, 0.74)
+      tl.to(".hero-canvas", { autoAlpha: 0, scale: 1.05, duration: 0.12 }, 0.74)
         .fromTo(
           ".hero-photo",
-          { autoAlpha: 0, scale: 0.86, rotate: -8 },
-          { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.14 },
-          0.7
+          { autoAlpha: 0, scale: 0.9, y: 18, filter: "blur(10px)" },
+          { autoAlpha: 1, scale: 1, y: 0, filter: "blur(0px)", duration: 0.14 },
+          0.72
         )
         .fromTo(".hero-final > *", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.08, stagger: 0.04 }, 0.82)
         .set({}, {}, 1);
@@ -88,9 +88,23 @@ export default function Hero() {
 
   return (
     <section ref={root} className={`hero${flat ? " is-flat" : ""}`} id="hero" aria-label="NutBytes">
-      <div className="hero-word-wrap">
+      <div className="hero-front">
         <h1 className="hero-word">NutBytes</h1>
         <p className="hero-tag">{t("hero.tag")}</p>
+        <div className="hero-actions">
+          <button className="btn btn-primary btn-lg" onClick={() => goTo("menu")}>
+            {t("hero.shop")} <ArrowIcon />
+          </button>
+          <a className="btn btn-ghost btn-lg" href={waLink(t("wa.hello"))} target="_blank" rel="noopener noreferrer">
+            <WhatsAppIcon size={18} /> {t("hero.wa")}
+          </a>
+        </div>
+        <ul className="hero-trust">
+          <li>{t("trust.1")}</li>
+          <li>{t("trust.2")}</li>
+          <li>{t("trust.3")}</li>
+          <li>{t("trust.4")}</li>
+        </ul>
       </div>
 
       <div className="hero-canvas" aria-hidden>
@@ -98,7 +112,7 @@ export default function Hero() {
       </div>
 
       <div className="hero-photo" aria-hidden>
-        <Image src="/img/hero-laddu.jpg" alt="" fill sizes="(max-width: 700px) 90vw, 640px" priority />
+        <Image src="/img/hero-laddu.webp" alt="" width={1298} height={971} sizes="(max-width: 700px) 92vw, 760px" />
       </div>
 
       <div className="hero-caps" aria-live="polite">

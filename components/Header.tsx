@@ -42,7 +42,7 @@ export default function Header() {
           goTo("hero");
         }}
       >
-        <Image src="/img/logo-badge.png" alt="" width={44} height={44} priority />
+        <Image src="/img/logo-badge-v2.png" alt="" width={44} height={44} priority />
         <span>NutBytes</span>
       </a>
 
@@ -55,11 +55,11 @@ export default function Header() {
 
       <div className="header-actions">
         <div className="lang" role="group" aria-label="Language">
-          <button aria-pressed={lang === "en"} onClick={() => setLang("en")}>
+          <button aria-pressed={lang === "en"} onClick={() => setLang("en")} aria-label="English">
             EN
           </button>
-          <button aria-pressed={lang === "te"} onClick={() => setLang("te")} lang="te">
-            తె
+          <button aria-pressed={lang === "te"} onClick={() => setLang("te")} lang="te" aria-label="తెలుగు">
+            తెలుగు
           </button>
         </div>
         <button className="box-btn" onClick={() => setOpen(true)} aria-label={t("nav.box")}>

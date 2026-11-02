@@ -1,5 +1,8 @@
 "use client";
 
+/* three.js scenes mutate buffers and loaded textures every frame by design */
+/* eslint-disable react-hooks/immutability */
+
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { Suspense, useEffect, useMemo, useRef, type MutableRefObject, type RefObject } from "react";
@@ -29,7 +32,6 @@ const TYPES: { key: string; share: number; size: [number, number] }[] = [
   { key: "apricot", share: 1.2, size: [0.7, 0.86] },
 ];
 
-const TOTAL = 230;
 const BALL_R = 1.28;
 
 function rng(seed: number) {
@@ -61,6 +63,7 @@ type Inst = {
 };
 
 function plan(vw: number, vh: number, ballScale: number): Inst[] {
+  const TOTAL = ballScale < 0.9 ? 120 : 230; // lighter on phones: less clutter, faster
   const r = rng(20261102);
   const present = TYPES.filter((t) => ATLAS.types[t.key]?.length);
   const shareSum = present.reduce((n, t) => n + t.share, 0) || 1;
@@ -117,6 +120,7 @@ const _dummy = new THREE.Object3D();
 const _q = new THREE.Quaternion();
 const _e = new THREE.Euler();
 const _v = new THREE.Vector3();
+const _p = new THREE.Vector3();
 const _yAxis = new THREE.Vector3(0, 1, 0);
 
 const smooth = (a: number, b: number, x: number) => {
@@ -153,12 +157,9 @@ function Nuts({
 
   const atlas = useLoader(THREE.TextureLoader, ATLAS.atlas);
   useEffect(() => {
-    // configuring a loaded three.js texture is a legitimate mutation
-    /* eslint-disable react-hooks/immutability */
     atlas.colorSpace = THREE.SRGBColorSpace;
     atlas.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
     atlas.needsUpdate = true;
-    /* eslint-enable react-hooks/immutability */
   }, [atlas, gl]);
 
   // one card, one material; each instance picks its nut from the atlas
@@ -176,13 +177,16 @@ function Nuts({
   }, [insts]);
 
   const material = useMemo(() => {
+    // soft alpha blending gives smooth, anti-aliased edges on every device.
+    // The cards are sorted back-to-front each frame (see useFrame) so they layer correctly.
     const m = new THREE.MeshLambertMaterial({
       map: atlas,
       side: THREE.DoubleSide,
-      alphaTest: 0.5,
+      transparent: true,
+      alphaTest: 0.01,
+      depthWrite: false,
       toneMapped: false,
     });
-    m.alphaToCoverage = true;
     m.onBeforeCompile = (shader) => {
       shader.vertexShader =
         "attribute vec4 aUvRect;\n" +
@@ -194,18 +198,24 @@ function Nuts({
     return m;
   }, [atlas]);
 
-  // a little brightness variation so no two cards look identical
+  // working buffers: cards are rewritten back-to-front every frame
+  const buf = useMemo(() => {
+    const n = insts.length;
+    const r = rng(7);
+    const bright = new Float32Array(n);
+    for (let i = 0; i < n; i++) bright[i] = 0.92 + r() * 0.14; // so no two cards look identical
+    return {
+      mats: new Float32Array(n * 16),
+      depth: new Float32Array(n),
+      order: Int32Array.from({ length: n }, (_, i) => i),
+      bright,
+    };
+  }, [insts]);
+
   useEffect(() => {
     const m = mesh.current;
     if (!m) return;
-    const c = new THREE.Color();
-    const r = rng(7);
-    for (let i = 0; i < insts.length; i++) {
-      const k = 0.92 + r() * 0.14;
-      c.setRGB(k, k, k);
-      m.setColorAt(i, c);
-    }
-    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    m.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(insts.length * 3), 3);
   }, [insts]);
 
   // report the assembled ball's pixel size so the laddu photo can match it
@@ -245,6 +255,7 @@ function Nuts({
     warm.setRGB(1 - glaze * 0.03, 1 - glaze * 0.08, 1 - glaze * 0.2);
     material.color.copy(warm);
 
+    if (g) g.updateMatrix();
     for (let n = 0; n < insts.length; n++) {
       const it = insts[n];
 
@@ -279,9 +290,31 @@ function Nuts({
       _dummy.quaternion.copy(_q);
       _dummy.scale.set(a > 1 ? k / a : k, a > 1 ? k : k * a, 1);
       _dummy.updateMatrix();
-      m.setMatrixAt(n, _dummy.matrix);
+      _dummy.matrix.toArray(buf.mats, n * 16);
+      // distance from the camera, after the ball's own rotation
+      buf.depth[n] = g ? _p.copy(_v).applyMatrix4(g.matrix).z : _v.z;
+    }
+
+    // painter's algorithm: far cards first
+    const { order, depth, mats, bright } = buf;
+    order.sort((a, b) => depth[a] - depth[b]);
+    const ia = m.instanceMatrix.array as Float32Array;
+    const rects = (m.geometry.getAttribute("aUvRect") as THREE.InstancedBufferAttribute);
+    const col = m.instanceColor;
+    for (let k = 0; k < order.length; k++) {
+      const n = order[k];
+      ia.set(mats.subarray(n * 16, n * 16 + 16), k * 16);
+      const c = insts[n].cut;
+      const ra = rects.array as Float32Array;
+      ra[k * 4] = c.u; ra[k * 4 + 1] = c.v; ra[k * 4 + 2] = c.uw; ra[k * 4 + 3] = c.vh;
+      if (col) {
+        const ca = col.array as Float32Array;
+        ca[k * 3] = ca[k * 3 + 1] = ca[k * 3 + 2] = bright[n];
+      }
     }
     m.instanceMatrix.needsUpdate = true;
+    rects.needsUpdate = true;
+    if (col) col.needsUpdate = true;
   });
 
   return (

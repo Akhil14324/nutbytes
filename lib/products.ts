@@ -38,7 +38,7 @@ export const PRODUCTS: Product[] = [
     te: "క్రంచీ పల్లీ లడ్డు",
     blurbEn: "Crunchy peanuts and dry fruit in a round, bite-sized laddu.",
     blurbTe: "కరకరలాడే పల్లీలు, డ్రై ఫ్రూట్స్‌తో గుండ్రని లడ్డు.",
-    img: "/img/peanut-laddu.jpg",
+    img: "/img/peanut-laddu-v2.jpg",
     tint: "#F4E6CC",
   },
   {
@@ -47,7 +47,7 @@ export const PRODUCTS: Product[] = [
     te: "కొబ్బరి బాల్",
     blurbEn: "A soft, sweet ball rolled in fresh coconut.",
     blurbTe: "కొబ్బరిలో చుట్టిన మృదువైన, తీయని బాల్.",
-    img: "/img/coconut.jpg",
+    img: "/img/coconut-v2.jpg",
     tint: "#F6E4E0",
   },
   {
@@ -56,7 +56,7 @@ export const PRODUCTS: Product[] = [
     te: "ప్రీమియం పీల్డ్ పల్లీ చిక్కీ",
     blurbEn: "Peeled peanuts set into a crisp, golden chikki.",
     blurbTe: "తొక్క తీసిన పల్లీలతో కరకరలాడే బంగారు చిక్కీ.",
-    img: "/img/chikki.jpg",
+    img: "/img/chikki-v2.jpg",
     tint: "#F3E3C4",
   },
   {
@@ -65,7 +65,7 @@ export const PRODUCTS: Product[] = [
     te: "పల్లీ నువ్వుల ఫ్యూజన్",
     blurbEn: "Peanuts and sesame together in one crunchy bite.",
     blurbTe: "పల్లీలు, నువ్వులు కలిసిన కరకరలాడే రుచి.",
-    img: "/img/sesame-fusion.jpg",
+    img: "/img/sesame-fusion-v2.jpg",
     tint: "#EFE4D2",
   },
   {
@@ -92,7 +92,7 @@ export const PRODUCTS: Product[] = [
     te: "మహారాజా అరిసెలు",
     blurbEn: "Our grand ariselu, packed with seeds and nuts.",
     blurbTe: "గింజలు, నట్స్‌తో నిండిన మా ప్రత్యేక అరిసెలు.",
-    img: "/img/maharaja.jpg",
+    img: "/img/maharaja-v2.jpg",
     tint: "#F8E7B8",
   },
 ];

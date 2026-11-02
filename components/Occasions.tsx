@@ -67,7 +67,7 @@ export default function Occasions() {
         <div className="gift-visual">
           <div className="gift-photo">
             <Image
-              src="/img/gift-yellow.jpg"
+              src="/img/gift-box-v2.jpg"
               alt="NutBytes gift box with laddus and spiced nuts"
               fill
               sizes="(max-width: 900px) 92vw, 640px"
