@@ -26,6 +26,39 @@ function SmoothScroll() {
     return () => window.removeEventListener("load", refresh);
   }, []);
 
+  // Chrome paints the strip behind a phone's bottom navigation bar with the page's
+  // background colour. Keep that colour equal to whatever section is at the bottom edge.
+  useEffect(() => {
+    let raf = 0;
+    const pick = () => {
+      raf = 0;
+      const root = document.documentElement;
+      let n: Element | null = document.elementFromPoint(window.innerWidth / 2, window.innerHeight - 3);
+      while (n && n !== root) {
+        const bg = getComputedStyle(n).backgroundColor;
+        if (bg && bg !== "transparent" && !/^rgba(s*0,s*0,s*0,s*0s*)$/.test(bg)) {
+          root.style.backgroundColor = bg;
+          return;
+        }
+        n = n.parentElement;
+      }
+      root.style.backgroundColor = "";
+    };
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(pick);
+    };
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    window.addEventListener("resize", on);
+    const t = window.setInterval(on, 1200); // also follows the menu's fading tint
+    return () => {
+      window.removeEventListener("scroll", on);
+      window.removeEventListener("resize", on);
+      window.clearInterval(t);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;

@@ -70,8 +70,7 @@ export default function Header() {
           go("hero");
         }}
       >
-        <Image src="/img/logo-badge-v2.png" alt="" width={44} height={44} priority />
-        <span>NutBytes</span>
+        <Image src="/img/logo-badge-v2.png" alt="" width={52} height={52} priority />
       </a>
 
       <nav className="nav" aria-label="Main">

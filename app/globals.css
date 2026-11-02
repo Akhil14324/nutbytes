@@ -46,7 +46,8 @@ html.lenis body {
 }
 
 html {
-  background: var(--cream);
+  background: var(--ivory);
+  transition: background-color 0.35s;
 }
 
 body {
@@ -219,6 +220,7 @@ button {
   box-shadow: 0 0 0 1px var(--line);
 }
 .brand span {
+  display: none;
   font-family: var(--font-d);
   font-size: 1.35rem;
   font-weight: 600;
