@@ -16,6 +16,16 @@ import Menu from "./Menu";
 import Occasions from "./Occasions";
 
 function SmoothScroll() {
+  // Keep the page layout steady: ignore the phone address bar sliding in and out, and
+  // re-measure once fonts and images have loaded, so no blank strip is left at the end.
+  useEffect(() => {
+    ScrollTrigger.config({ ignoreMobileResize: true });
+    const refresh = () => ScrollTrigger.refresh();
+    document.fonts?.ready.then(refresh);
+    window.addEventListener("load", refresh);
+    return () => window.removeEventListener("load", refresh);
+  }, []);
+
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;

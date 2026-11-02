@@ -70,11 +70,12 @@ export default function Occasions() {
               src="/img/gift-box-v2.jpg"
               alt="NutBytes gift box with laddus and spiced nuts"
               fill
+              quality={90}
               sizes="(max-width: 900px) 92vw, 640px"
             />
           </div>
           <div className="gift-chip">
-            <Image src="/img/laddu-2.jpg" alt="" fill sizes="200px" />
+            <Image src="/img/menu/royal-nut-sunnunda.jpg" alt="" fill quality={85} sizes="200px" />
           </div>
         </div>
       </section>

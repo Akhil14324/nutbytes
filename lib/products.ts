@@ -20,7 +20,7 @@ export const PRODUCTS: Product[] = [
     te: "సిగ్నేచర్ డ్రై ఫ్రూట్ లడ్డూ",
     blurbEn: "Almonds, pistachios, pumpkin seeds and figs, pressed into every bite.",
     blurbTe: "బాదం, పిస్తా, గుమ్మడి గింజలు, అంజీర్ — ప్రతి ముక్కలో.",
-    img: "/img/laddu-1.jpg",
+    img: "/img/menu/signature-dry-fruit-ladoo.jpg",
     tint: "#F7EBD3",
   },
   {
@@ -29,7 +29,7 @@ export const PRODUCTS: Product[] = [
     te: "రాయల్ నట్ సున్నుండ",
     blurbEn: "A rich, nutty sunnunda made the traditional way.",
     blurbTe: "సంప్రదాయ పద్ధతిలో చేసిన రిచ్ నట్ సున్నుండ.",
-    img: "/img/laddu-2.jpg",
+    img: "/img/menu/royal-nut-sunnunda.jpg",
     tint: "#E8EDD6",
   },
   {
@@ -38,7 +38,7 @@ export const PRODUCTS: Product[] = [
     te: "క్రంచీ పల్లీ లడ్డు",
     blurbEn: "Crunchy peanuts and dry fruit in a round, bite-sized laddu.",
     blurbTe: "కరకరలాడే పల్లీలు, డ్రై ఫ్రూట్స్‌తో గుండ్రని లడ్డు.",
-    img: "/img/peanut-laddu-v2.jpg",
+    img: "/img/menu/crunchy-peanut-laddu.jpg",
     tint: "#F4E6CC",
   },
   {
@@ -47,7 +47,7 @@ export const PRODUCTS: Product[] = [
     te: "కొబ్బరి బాల్",
     blurbEn: "A soft, sweet ball rolled in fresh coconut.",
     blurbTe: "కొబ్బరిలో చుట్టిన మృదువైన, తీయని బాల్.",
-    img: "/img/coconut-v2.jpg",
+    img: "/img/menu/coconutty-ball.jpg",
     tint: "#F6E4E0",
   },
   {
@@ -56,7 +56,7 @@ export const PRODUCTS: Product[] = [
     te: "ప్రీమియం పీల్డ్ పల్లీ చిక్కీ",
     blurbEn: "Peeled peanuts set into a crisp, golden chikki.",
     blurbTe: "తొక్క తీసిన పల్లీలతో కరకరలాడే బంగారు చిక్కీ.",
-    img: "/img/chikki-v2.jpg",
+    img: "/img/menu/premium-peeled-peanut-chikki.jpg",
     tint: "#F3E3C4",
   },
   {
@@ -65,7 +65,7 @@ export const PRODUCTS: Product[] = [
     te: "పల్లీ నువ్వుల ఫ్యూజన్",
     blurbEn: "Peanuts and sesame together in one crunchy bite.",
     blurbTe: "పల్లీలు, నువ్వులు కలిసిన కరకరలాడే రుచి.",
-    img: "/img/sesame-fusion-v2.jpg",
+    img: "/img/menu/peanut-sesame-fusion.jpg",
     tint: "#EFE4D2",
   },
   {
@@ -74,7 +74,7 @@ export const PRODUCTS: Product[] = [
     te: "డ్రై ఫ్రూట్ అరిసెలు",
     blurbEn: "Traditional Andhra ariselu, made with dry fruit.",
     blurbTe: "డ్రై ఫ్రూట్స్‌తో చేసిన సంప్రదాయ ఆంధ్ర అరిసెలు.",
-    img: "/img/ariselu-plain.jpg",
+    img: "/img/menu/dry-fruit-ariselu.jpg",
     tint: "#F3DDCB",
   },
   {
@@ -83,7 +83,7 @@ export const PRODUCTS: Product[] = [
     te: "నువ్వుల పూత డ్రై ఫ్రూట్ అరిసెలు",
     blurbEn: "Dry fruit ariselu with a crisp coat of sesame.",
     blurbTe: "నువ్వుల పూతతో డ్రై ఫ్రూట్ అరిసెలు.",
-    img: "/img/ariselu-sesame.jpg",
+    img: "/img/menu/nuvvulu-coated-dry-fruit-ariselu.jpg",
     tint: "#F5E5C6",
   },
   {
@@ -92,7 +92,7 @@ export const PRODUCTS: Product[] = [
     te: "మహారాజా అరిసెలు",
     blurbEn: "Our grand ariselu, packed with seeds and nuts.",
     blurbTe: "గింజలు, నట్స్‌తో నిండిన మా ప్రత్యేక అరిసెలు.",
-    img: "/img/maharaja-v2.jpg",
+    img: "/img/menu/maharaja-ariselu.jpg",
     tint: "#F8E7B8",
   },
 ];

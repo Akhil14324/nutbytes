@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useLang } from "@/lib/i18n";
@@ -15,6 +15,7 @@ export default function Menu() {
   const { t, lang } = useLang();
   const cart = useCart();
   const root = useRef<HTMLElement>(null);
+  const strip = useRef<HTMLDivElement>(null);
   const st = useRef<ScrollTrigger | null>(null);
   const [active, setActive] = useState(0);
   const [sel, setSel] = useState<Record<string, { w: Weight; q: number }>>({});
@@ -34,7 +35,6 @@ export default function Menu() {
           setActive((prev) => (prev === i ? prev : i));
         },
       });
-      // reveal of the section's content as the pin starts
       gsap.from(".menu-stage", {
         autoAlpha: 0,
         y: 60,
@@ -45,6 +45,14 @@ export default function Menu() {
     },
     { scope: root }
   );
+
+  // keep the active thumbnail in view in the phone's scrolling strip
+  useEffect(() => {
+    const el = strip.current?.children[active] as HTMLElement | undefined;
+    const box = strip.current;
+    if (!el || !box || box.scrollWidth <= box.clientWidth + 2) return;
+    box.scrollTo({ left: el.offsetLeft - box.clientWidth / 2 + el.clientWidth / 2, behavior: "smooth" });
+  }, [active]);
 
   const go = useCallback((i: number) => {
     const s = st.current;
@@ -69,32 +77,39 @@ export default function Menu() {
   return (
     <section ref={root} id="menu" className="menu" style={{ backgroundColor: p.tint }} aria-label={t("nav.menu")}>
       <div className="menu-stage">
-        <div className="menu-visual">
-          <div className="plate-ring" aria-hidden />
-          <div className="plate">
-            {PRODUCTS.map((x, i) => (
-              <Image
-                key={x.id}
-                src={x.img}
-                alt={i === active ? name(x) : ""}
-                fill
-                sizes="(max-width: 800px) 70vw, 520px"
-                className={`plate-img${i === active ? " is-on" : i < active ? " is-past" : ""}`}
-                priority={i < 2}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="menu-copy">
-          <p className="menu-count">
+        {/* the whole photo, with the product's name written on it */}
+        <div className="menu-card">
+          {PRODUCTS.map((x, i) => (
+            <Image
+              key={x.id}
+              src={x.img}
+              alt={i === active ? name(x) : ""}
+              fill
+              quality={90}
+              sizes="(max-width: 920px) 94vw, 860px"
+              className={`card-img${i === active ? " is-on" : i < active ? " is-past" : ""}`}
+              priority={i < 2}
+            />
+          ))}
+          <div className="card-scrim" aria-hidden />
+          <p className="card-count">
             {active + 1} {t("menu.of")} {N}
           </p>
-          <div className="menu-text" key={p.id}>
+          <div className="card-arrows">
+            <button onClick={() => go(active - 1)} disabled={active === 0} aria-label="Previous">
+              <ArrowIcon className="flip" />
+            </button>
+            <button onClick={() => go(active + 1)} disabled={active === N - 1} aria-label="Next">
+              <ArrowIcon />
+            </button>
+          </div>
+          <div className="card-text" key={p.id}>
             <h2 className="menu-title">{name(p)}</h2>
             <p className="menu-blurb">{lang === "te" ? p.blurbTe : p.blurbEn}</p>
           </div>
+        </div>
 
+        <div className="menu-panel">
           <div className="field">
             <span className="field-label" id="w-label">
               {t("menu.weight")}
@@ -130,29 +145,19 @@ export default function Menu() {
           </div>
           <p className="menu-note">{t("menu.price")}</p>
 
-          <div className="menu-nav">
-            <div className="thumbs" role="tablist" aria-label={t("nav.menu")}>
-              {PRODUCTS.map((x, i) => (
-                <button
-                  key={x.id}
-                  role="tab"
-                  aria-selected={i === active}
-                  aria-label={name(x)}
-                  className={`thumb${i === active ? " is-on" : ""}`}
-                  onClick={() => go(i)}
-                >
-                  <Image src={x.img} alt="" width={44} height={44} />
-                </button>
-              ))}
-            </div>
-            <div className="arrows">
-              <button onClick={() => go(active - 1)} disabled={active === 0} aria-label="Previous">
-                <ArrowIcon className="flip" />
+          <div className="index" ref={strip} role="tablist" aria-label={t("nav.menu")}>
+            {PRODUCTS.map((x, i) => (
+              <button
+                key={x.id}
+                role="tab"
+                aria-selected={i === active}
+                aria-label={name(x)}
+                className={`index-item${i === active ? " is-on" : ""}`}
+                onClick={() => go(i)}
+              >
+                <Image src={x.img} alt="" fill quality={70} sizes="160px" />
               </button>
-              <button onClick={() => go(active + 1)} disabled={active === N - 1} aria-label="Next">
-                <ArrowIcon />
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>

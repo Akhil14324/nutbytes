@@ -95,25 +95,6 @@ export default function Hero() {
 
   return (
     <section ref={root} className={`hero${flat ? " is-flat" : ""}`} id="hero" aria-label="NutBytes">
-      <div className="hero-front">
-        <h1 className="hero-word">NutBytes</h1>
-        <p className="hero-tag">{t("hero.tag")}</p>
-        <div className="hero-actions">
-          <button className="btn btn-primary btn-lg" onClick={() => goTo("menu")}>
-            {t("hero.shop")} <ArrowIcon />
-          </button>
-          <a className="btn btn-ghost btn-lg" href={waLink(t("wa.hello"))} target="_blank" rel="noopener noreferrer">
-            <WhatsAppIcon size={18} /> {t("hero.wa")}
-          </a>
-        </div>
-        <ul className="hero-trust">
-          <li>{t("trust.1")}</li>
-          <li>{t("trust.2")}</li>
-          <li>{t("trust.3")}</li>
-          <li>{t("trust.4")}</li>
-        </ul>
-      </div>
-
       <div className="hero-canvas" aria-hidden>
         {!flat && <NutScene progress={progress} host={root} active={active} calm={calm} />}
       </div>
@@ -121,27 +102,49 @@ export default function Hero() {
       <div className="hero-ground" aria-hidden />
 
       <div className="hero-photo" aria-hidden>
-        <Image src="/img/hero-laddu.webp" alt="" width={1298} height={971} sizes="(max-width: 700px) 92vw, 760px" />
+        <Image src="/img/hero-laddu.webp" alt="" width={1298} height={971} quality={92} sizes="(max-width: 700px) 92vw, 760px" />
       </div>
 
       <div className="hero-glow" aria-hidden />
 
-      <div className="hero-caps" aria-live="polite">
-        <p className="hero-cap cap-1">{t("hero.cap1")}</p>
-        <p className="hero-cap cap-2">{t("hero.cap2")}</p>
-        <p className="hero-cap cap-3">{t("hero.cap3")}</p>
-      </div>
+      {/* text lives in a layer sized to the visible screen, so it never slips under a phone's address bar */}
+      <div className="hero-stage">
+        <div className="hero-front">
+          <h1 className="hero-word">NutBytes</h1>
+          <p className="hero-tag">{t("hero.tag")}</p>
+          <div className="hero-actions">
+            <button className="btn btn-primary btn-lg" onClick={() => goTo("menu")}>
+              {t("hero.shop")} <ArrowIcon />
+            </button>
+            <a className="btn btn-ghost btn-lg" href={waLink(t("wa.hello"))} target="_blank" rel="noopener noreferrer">
+              <WhatsAppIcon size={18} /> {t("hero.wa")}
+            </a>
+          </div>
+          <ul className="hero-trust">
+            <li>{t("trust.1")}</li>
+            <li>{t("trust.2")}</li>
+            <li>{t("trust.3")}</li>
+            <li>{t("trust.4")}</li>
+          </ul>
+        </div>
 
-      <div className="hero-final">
-        <h2>{t("hero.final")}</h2>
-        <button className="btn btn-primary" onClick={() => goTo("menu")}>
-          {t("hero.cta")} <ArrowIcon />
-        </button>
-      </div>
+        <div className="hero-caps" aria-live="polite">
+          <p className="hero-cap cap-1">{t("hero.cap1")}</p>
+          <p className="hero-cap cap-2">{t("hero.cap2")}</p>
+          <p className="hero-cap cap-3">{t("hero.cap3")}</p>
+        </div>
 
-      <div className="hero-cue" aria-hidden>
-        <span>{t("hero.scroll")}</span>
-        <i />
+        <div className="hero-final">
+          <h2>{t("hero.final")}</h2>
+          <button className="btn btn-primary" onClick={() => goTo("menu")}>
+            {t("hero.cta")} <ArrowIcon />
+          </button>
+        </div>
+
+        <div className="hero-cue" aria-hidden>
+          <span>{t("hero.scroll")}</span>
+          <i />
+        </div>
       </div>
     </section>
   );
