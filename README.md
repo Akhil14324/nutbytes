@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NutBytes
 
-## Getting Started
+Ordering website for NutBytes (traditional sweets with nuts and dry fruit, Ongole).
+Scroll-driven 3D hero (nuts assemble into a laddu), a pinned menu with per-product
+background tints, a cart, and WhatsApp / Instagram ordering. English and Telugu.
 
-First, run the development server:
+## Stack
+Next.js (App Router) · React Three Fiber · GSAP ScrollTrigger · Lenis · TypeScript
 
+## Run
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build
 ```
+No backend or database. Orders are sent as a pre-filled WhatsApp message.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Where things live
+- `lib/products.ts` the 9 products (names, Telugu names, blurbs, photo, background tint)
+- `lib/site.ts` phone numbers, Instagram, FSSAI number
+- `lib/i18n.tsx` English and Telugu strings
+- `lib/cart.tsx` cart state and the WhatsApp message format
+- `components/NutScene.tsx` the 3D scene (nuts are real photo cutouts)
+- `public/nuts/` nut cutouts + `manifest.json`
+- `public/img/` product, gift and logo images
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Adding a nut to the 3D scene
+Shoot or generate a flat-lay photo of one nut type on a flat magenta background
+(nuts spaced apart, not touching), then:
+```bash
+node scripts/cut-nuts.mjs <type> path/to/<type>-sheet.jpg
+```
+Supported types: cashew, almond, walnut, pista, peanut, seed, raisin, fig, date, apricot.
+Commit the new files in `public/nuts/`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Prices
+Prices are intentionally not shown. The cart says "Price confirmed on WhatsApp".
