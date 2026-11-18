@@ -4,8 +4,8 @@ import Image from "next/image";
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useLang, type Key } from "@/lib/i18n";
-import { waLink } from "@/lib/site";
 import { ArrowIcon, WhatsAppIcon } from "./Icons";
+import WhatsAppLink from "./WhatsAppLink";
 
 const ROWS: { t: Key; d: Key }[] = [
   { t: "occ.1.t", d: "occ.1.d" },
@@ -60,15 +60,15 @@ export default function Occasions() {
         <div className="gift-copy">
           <h2 className="section-title">{t("gift.title")}</h2>
           <p className="gift-body">{t("gift.body")}</p>
-          <a className="btn btn-primary" href={waLink(t("gift.msg"))} target="_blank" rel="noopener noreferrer">
+          <WhatsAppLink className="btn btn-primary" text={t("gift.msg")}>
             <WhatsAppIcon size={18} /> {t("gift.cta")} <ArrowIcon />
-          </a>
+          </WhatsAppLink>
         </div>
         <div className="gift-visual">
           <div className="gift-photo">
             <Image
-              src="/img/gift-box-v2.jpg"
-              alt="NutBytes gift box with laddus and spiced nuts"
+              src="/img/gift-box-v3.jpg"
+              alt="Green gift box with a gold ribbon, filled with tins of nuts and dry fruit"
               fill
               quality={90}
               sizes="(max-width: 900px) 92vw, 640px"

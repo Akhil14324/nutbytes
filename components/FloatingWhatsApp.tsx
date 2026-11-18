@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useLang } from "@/lib/i18n";
-import { waLink } from "@/lib/site";
 import { WhatsAppIcon } from "./Icons";
+import WhatsAppLink from "./WhatsAppLink";
 
 export default function FloatingWhatsApp() {
   const { t } = useLang();
@@ -19,15 +19,13 @@ export default function FloatingWhatsApp() {
   }, []);
 
   return (
-    <a
+    <WhatsAppLink
       className={`fab${show && !open ? " is-on" : ""}`}
-      href={waLink(t("wa.hello"))}
-      target="_blank"
-      rel="noopener noreferrer"
+      text={t("wa.hello")}
       aria-label={t("wa.fab")}
       tabIndex={show && !open ? 0 : -1}
     >
       <WhatsAppIcon size={26} />
-    </a>
+    </WhatsAppLink>
   );
 }

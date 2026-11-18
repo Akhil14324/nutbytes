@@ -4,9 +4,9 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
 import { useLang, type Key } from "@/lib/i18n";
-import { waLink } from "@/lib/site";
 import { goTo } from "@/lib/smooth";
 import { BoxIcon, WhatsAppIcon } from "./Icons";
+import WhatsAppLink from "./WhatsAppLink";
 
 const LINKS: { id: string; key: Key }[] = [
   { id: "menu", key: "nav.menu" },
@@ -129,9 +129,9 @@ export default function Header() {
         </nav>
         <div className="mnav-foot">
           {langToggle}
-          <a className="btn btn-primary" href={waLink(t("wa.hello"))} target="_blank" rel="noopener noreferrer">
+          <WhatsAppLink className="btn btn-primary" text={t("wa.hello")}>
             <WhatsAppIcon size={18} /> {t("hero.wa")}
-          </a>
+          </WhatsAppLink>
         </div>
       </div>
     </header>

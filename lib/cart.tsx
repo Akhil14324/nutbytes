@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { PRODUCTS, productById, type Weight } from "./products";
-import { waLink } from "./site";
+import { isDesktop, waLink } from "./site";
 
 export type CartItem = { id: string; weight: Weight; qty: number };
 
@@ -26,6 +26,35 @@ const CartCtx = createContext<Ctx | null>(null);
 const KEY = "nb-cart-v1";
 
 const order = (id: string) => PRODUCTS.findIndex((p) => p.id === id);
+
+/** The WhatsApp order message: one line per product, then the customer's details, each ending in a comma. */
+export function formatOrder(items: CartItem[], d: Details) {
+  const lines = items.map((i) => {
+    const p = productById(i.id);
+    return `• Product: ${p?.en ?? i.id}, Weight: ${i.weight}, Quantity: ${i.qty}`;
+  });
+  // the date input gives yyyy-mm-dd; show it the Indian way, dd/mm/yyyy
+  const date = d.date ? d.date.split("-").reverse().join("/") : "";
+  const details = [
+    `Name: ${d.name.trim()}`,
+    d.phone.trim() ? `Phone: ${d.phone.trim()}` : "",
+    `Area / pincode: ${d.area.trim()}`,
+    date ? `Delivery date: ${date}` : "",
+    d.note.trim() ? `Note: ${d.note.trim()}` : "",
+  ]
+    .filter(Boolean)
+    // a comma after every detail except the last
+    .map((line, i, all) => (i < all.length - 1 ? `${line},` : line));
+  return [
+    "Hello NutBytes! I would like to order:",
+    "",
+    ...lines,
+    "",
+    ...details,
+    "",
+    "Please confirm the price and delivery.",
+  ].join("\n");
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -87,33 +116,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clear = useCallback(() => setItems([]), []);
 
-  const buildMessage = useCallback(
-    (d: Details) => {
-      const lines = items.map((i) => {
-        const p = productById(i.id);
-        return `• ${p?.en ?? i.id} - ${i.weight} x ${i.qty}`;
-      });
-      const details = [
-        `Name: ${d.name.trim()}`,
-        d.phone.trim() ? `Phone: ${d.phone.trim()}` : "",
-        `Area / pincode: ${d.area.trim()}`,
-        d.date ? `Needed by: ${d.date}` : "",
-        d.note.trim() ? `Note: ${d.note.trim()}` : "",
-      ].filter(Boolean);
-      return [
-        "Hello NutBytes! I would like to order:",
-        "",
-        ...lines,
-        "",
-        ...details,
-        "",
-        "Please confirm the price and delivery.",
-      ].join("\n");
-    },
-    [items]
-  );
+  const buildMessage = useCallback((d: Details) => formatOrder(items, d), [items]);
 
-  const buildLink = useCallback((d: Details) => waLink(buildMessage(d)), [buildMessage]);
+  const buildLink = useCallback((d: Details) => waLink(buildMessage(d), { desktop: isDesktop() }), [buildMessage]);
 
   const count = useMemo(() => items.reduce((n, i) => n + i.qty, 0), [items]);
 

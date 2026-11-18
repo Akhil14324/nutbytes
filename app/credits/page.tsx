@@ -7,7 +7,6 @@ export const metadata: Metadata = {
 };
 
 const BY_SA_4 = { name: "CC BY-SA 4.0", url: "https://creativecommons.org/licenses/by-sa/4.0/" };
-const BY_SA_3 = { name: "CC BY-SA 3.0", url: "https://creativecommons.org/licenses/by-sa/3.0/" };
 
 const PHOTOS = [
   {
@@ -37,13 +36,6 @@ const PHOTOS = [
     author: "Baby Devi 26",
     page: "https://commons.wikimedia.org/wiki/File:Coconut_ladoo,_Assam.jpg",
     license: BY_SA_4,
-  },
-  {
-    item: "Maharaja Ariselu",
-    title: "Ariselu",
-    author: "T.sujatha",
-    page: "https://commons.wikimedia.org/wiki/File:Ariselu.jpg",
-    license: BY_SA_3,
   },
 ];
 

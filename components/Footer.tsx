@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { useLang } from "@/lib/i18n";
-import { SITE, waLink } from "@/lib/site";
+import { SITE } from "@/lib/site";
 import { InstagramIcon, WhatsAppIcon } from "./Icons";
+import WhatsAppLink from "./WhatsAppLink";
 
 export default function Footer() {
   const { t } = useLang();
@@ -17,14 +18,14 @@ export default function Footer() {
         </div>
         <ul className="footer-links">
           <li>
-            <a href={waLink(t("wa.hello"))} target="_blank" rel="noopener noreferrer">
+            <WhatsAppLink text={t("wa.hello")}>
               <WhatsAppIcon size={18} /> <span>{SITE.waDisplay}</span>
-            </a>
+            </WhatsAppLink>
           </li>
           <li>
-            <a href={`https://wa.me/${SITE.phone2}`} target="_blank" rel="noopener noreferrer">
+            <WhatsAppLink text={t("wa.hello")} phone={SITE.phone2}>
               <WhatsAppIcon size={18} /> <span>{SITE.phone2Display}</span>
-            </a>
+            </WhatsAppLink>
           </li>
           <li>
             <a href={SITE.instagram} target="_blank" rel="noopener noreferrer">
