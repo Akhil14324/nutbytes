@@ -11,7 +11,7 @@ export default function Footer() {
   return (
     <footer id="contact" className="footer">
       <div className="footer-top">
-        <Image src="/img/logo-wreath-v3.png" alt="NutBytes" width={168} height={168} className="footer-logo" />
+        <Image src="/img/logo-wreath-v4.png" alt="NutBytes" width={168} height={168} className="footer-logo" />
         <div className="footer-lead">
           <p className="footer-line">{t("foot.line")}</p>
           <p className="footer-deliver">{t("foot.deliver")}</p>

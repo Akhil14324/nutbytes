@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Customer Care – NutBytes</title>
+    <meta name="description" content="FAQs, ordering and delivery, returns and refunds, and order tracking for NutBytes." />
+    <meta name="theme-color" content="#fef5f0" />
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body data-page="help">
+    <div id="site-header"></div>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <p class="crumbs"><a href="index.html">Home</a> / Customer Care</p>
+          <h1>Customer Care</h1>
+          <p>Answers to common questions. Still stuck? Message us on WhatsApp.</p>
+          <nav class="help-nav" aria-label="Help topics">
+            <a class="chip" href="#faqs">FAQs</a>
+            <a class="chip" href="#delivery">Order &amp; Delivery</a>
+            <a class="chip" href="#returns">Returns &amp; Refunds</a>
+            <a class="chip" href="#track">Track Your Order</a>
+          </nav>
+        </div>
+      </section>
+      <section class="section" style="padding-top:20px">
+        <div class="prose container">
+          <h2 id="faqs">FAQs</h2>
+          <div class="faq">
+            <details>
+              <summary>Do your snacks contain sugar or maida?</summary>
+              <p>Our snacks are made with no processed sugar and no maida.</p>
+            </details>
+            <details>
+              <summary>Where do you deliver?</summary>
+              <p>We deliver in Ongole and nearby areas. If you're further away, message us on WhatsApp and we'll let you know.</p>
+            </details>
+            <details>
+              <summary>Are the prices on the website final?</summary>
+              <p>We confirm the final price, and any delivery charge, with you on WhatsApp before we pack your order.</p>
+            </details>
+            <details>
+              <summary>Can I order gift boxes for an event?</summary>
+              <p>Yes. Message us on WhatsApp with the occasion, the number of boxes and the date, and we'll help you plan it.</p>
+            </details>
+            <details>
+              <summary>Is NutBytes FSSAI registered?</summary>
+              <p>Yes. Our FSSAI registration number is 20126171000742.</p>
+            </details>
+          </div>
+
+          <h2 id="delivery">Order &amp; Delivery</h2>
+          <p>
+            Add your snacks to the cart and check out with your delivery address. After you place the order, tap
+            “Send Order on WhatsApp”. Your order is already typed in, so just check it and press send. We'll reply to
+            confirm the price, any delivery charge and the delivery time.
+          </p>
+          <p>You can also order directly on WhatsApp at <a href="#" data-wa style="color:var(--rose-ink);font-weight:500">+91 90002 42480</a>.</p>
+
+          <h2 id="returns">Returns &amp; Refunds</h2>
+          <p>
+            If something arrives damaged or isn't right, message us on WhatsApp with your order ID and a photo, and
+            we'll sort it out with you.
+          </p>
+
+          <h2 id="track">Track Your Order</h2>
+          <p style="margin-bottom:16px">Enter the order ID from your confirmation page, for example NB-261120-AB12.</p>
+          <form class="track-form" data-track>
+            <label class="field"><span class="visually-hidden">Order ID</span><input name="id" placeholder="Order ID" autocomplete="off" required /></label>
+            <button class="btn btn-brown" type="submit">Track Order</button>
+          </form>
+          <div class="track-result" data-track-result aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/pages.js"></script>
+  </body>
+</html>

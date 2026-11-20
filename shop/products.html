@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Our Snacks – NutBytes</title>
+    <meta name="description" content="Browse NutBytes nut bites, coconut bites and seed bites: laddus, chikki, sunnunda and ariselu." />
+    <meta name="theme-color" content="#fef5f0" />
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body data-page="snacks" data-nav="snacks">
+    <div id="site-header"></div>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <p class="crumbs"><a href="index.html">Home</a> / Snacks</p>
+          <h1>Our Snacks</h1>
+          <p>Handcrafted with nuts, seeds and dry fruits. No processed sugar, no maida.</p>
+        </div>
+      </section>
+      <section class="section" style="padding-top:28px">
+        <div class="container">
+          <form class="toolbar" id="shop-form" role="search">
+            <div class="chips" data-chips aria-label="Collections"></div>
+            <div class="toolbar-right">
+              <label class="field-inline"><span data-icon="search"></span>
+                <span class="visually-hidden">Search snacks</span>
+                <input id="shop-q" type="search" placeholder="Search snacks" autocomplete="off" />
+              </label>
+              <label class="field-inline"><span class="visually-hidden">Sort by</span>
+                <select id="shop-sort">
+                  <option value="featured">Featured</option>
+                  <option value="low">Price: low to high</option>
+                  <option value="high">Price: high to low</option>
+                  <option value="name">Name: A to Z</option>
+                </select>
+              </label>
+            </div>
+          </form>
+          <p class="result-note" data-note aria-live="polite"></p>
+          <div class="product-grid" data-grid></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/pages.js"></script>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NutBytes – Healthy Snacking</title>
+    <meta
+      name="description"
+      content="Handcrafted healthy snacks from Ongole made with the finest nuts, seeds and dry fruits. No processed sugar, no maida."
+    />
+    <meta name="theme-color" content="#fef5f0" />
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="img/hero-banner.webp"
+      imagesrcset="img/hero-banner-960.webp 960w, img/hero-banner.webp 1671w"
+      imagesizes="100vw"
+      media="(min-width: 861px)"
+    />
+    <link rel="preload" as="image" href="img/hero-banner-mobile.webp" media="(max-width: 860px)" />
+    <link rel="preload" as="image" href="img/logo-ring.webp" />
+    <link rel="preload" as="image" href="img/logo-core.webp" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <!-- logo intro: loaded here so the page never flashes before it starts -->
+    <script src="js/intro.js"></script>
+  </head>
+  <body data-page="home">
+    <div id="site-header"></div>
+
+    <main>
+      <section class="hero hero-photo" aria-labelledby="hero-title">
+        <picture class="hero-bg">
+          <source media="(max-width: 860px)" srcset="img/hero-banner-mobile.webp" />
+          <img
+            src="img/hero-banner.webp"
+            srcset="img/hero-banner-960.webp 960w, img/hero-banner.webp 1671w"
+            sizes="100vw"
+            alt="Nut, seed and coconut bites on a pink cake stand, with almonds, cashews and flowers"
+            width="1671"
+            height="941"
+            fetchpriority="high"
+          />
+        </picture>
+        <div class="hero-inner">
+          <div class="hero-copy" data-reveal>
+            <h1 id="hero-title">
+              Deliciously Handcrafted Sweets and Treats made with Love
+              <span class="sub">Perfect for every celebration <span class="heart" data-icon="heart"></span></span>
+            </h1>
+            <p class="hero-text">Nutritious and delicious snacks made with the finest nuts, seeds and dry fruits.</p>
+            <a class="btn btn-brown" href="products.html">Explore Our Snacks <span data-icon="arrow"></span></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="benefits" aria-label="Why NutBytes">
+        <ul class="container">
+          <li data-reveal>
+            <span class="benefit-icon leaf" data-icon="leaf"></span>
+            <div>
+              <h3>Naturally Nutritious</h3>
+              <p>Goodness of nuts, seeds and dry fruits.</p>
+            </div>
+          </li>
+          <li data-reveal>
+            <span class="benefit-icon heart" data-icon="heart"></span>
+            <div>
+              <h3>No Preservatives</h3>
+              <p>Pure, natural and honest snacking.</p>
+            </div>
+          </li>
+          <li data-reveal>
+            <span class="benefit-icon bolt" data-icon="bolt"></span>
+            <div>
+              <h3>Energy Boost</h3>
+              <p>A healthy bite anytime, anywhere.</p>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="collections" id="collections" aria-label="Our collections">
+        <div class="container">
+          <div class="collection-grid" data-collections></div>
+        </div>
+      </section>
+
+      <section class="about-split" id="about" aria-labelledby="about-title">
+        <div class="about-inner">
+          <div class="about-media" data-reveal>
+            <img
+              src="img/about-packaging-v2.webp"
+              alt="NutBytes gift packaging illustrated with an elephant, palace and leaves"
+              width="520"
+              height="340"
+              loading="lazy"
+            />
+          </div>
+          <div class="about-copy" data-reveal>
+            <h2 id="about-title">A Little Bite<br />of Goodness <span class="heart" data-icon="heart"></span></h2>
+            <p>
+              At <b>NutBytes</b>, we bring you healthy snacking crafted with care, using high-quality ingredients and a
+              whole lot of love.
+            </p>
+            <a class="btn btn-outline" href="about.html">Our Story <span data-icon="arrow"></span></a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/pages.js"></script>
+  </body>
+</html>
