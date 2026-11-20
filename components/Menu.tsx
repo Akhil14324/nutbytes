@@ -72,7 +72,7 @@ export default function Menu() {
     window.setTimeout(() => setFlash((f) => (f === p.id ? null : f)), 1400);
   };
 
-  const name = (x: (typeof PRODUCTS)[number]) => (lang === "te" ? x.te : x.en);
+  const name = (x: (typeof PRODUCTS)[number]) => (lang === "te" ? x.te || x.en : x.en);
 
   return (
     <section ref={root} id="menu" className="menu" style={{ backgroundColor: p.tint }} aria-label={t("nav.menu")}>
@@ -105,7 +105,7 @@ export default function Menu() {
           </div>
           <div className="card-text" key={p.id}>
             <h2 className="menu-title">{name(p)}</h2>
-            <p className="menu-blurb">{lang === "te" ? p.blurbTe : p.blurbEn}</p>
+            <p className="menu-blurb">{lang === "te" ? p.blurbTe || p.blurbEn : p.blurbEn}</p>
           </div>
         </div>
 

@@ -127,7 +127,7 @@ export default function CartDrawer() {
                       <Image src={p.img} alt="" fill sizes="64px" />
                     </div>
                     <div className="line-main">
-                      <p className="line-name">{lang === "te" ? p.te : p.en}</p>
+                      <p className="line-name">{lang === "te" ? p.te || p.en : p.en}</p>
                       <div className="line-ctl">
                         <select
                           value={i.weight}
