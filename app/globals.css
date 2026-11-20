@@ -1488,3 +1488,52 @@ html[lang="te"] .footer-line {
     display: none;
   }
 }
+
+/* ---------------------------------------------------------------- *
+ *  Offer strip (edited from /admin)
+ * ---------------------------------------------------------------- */
+.offer-strip[hidden] {
+  display: none;
+}
+.offer-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 14px var(--gutter);
+  background: var(--navy);
+  color: var(--ivory);
+  text-align: center;
+}
+.offer-tag {
+  flex: none;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--cocoa);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.offer-text {
+  margin: 0;
+  font-weight: 600;
+  animation: offer-in 0.5s var(--ease);
+}
+.offer-count {
+  flex: none;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+@keyframes offer-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .offer-text {
+    animation: none;
+  }
+}
