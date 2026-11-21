@@ -47,6 +47,12 @@
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   NB.esc = esc;
 
+  /** Banner for offers switched on in /admin. */
+  function offerStrip() {
+    if (!NB.LIVE_OFFERS || !NB.LIVE_OFFERS.length) return "";
+    return `<div class="offer-strip" role="status">${NB.LIVE_OFFERS.map((o) => `<span>${esc(o.text)}</span>`).join("")}</div>`;
+  }
+
   function header(page) {
     const links = NAV.map(
       (n) => `<li><a href="${n.href}"${n.id === page ? ' class="is-active" aria-current="page"' : ""}>${n.label}</a></li>`
@@ -297,7 +303,7 @@
     const page = document.body.dataset.nav || document.body.dataset.page || "";
     const h = document.getElementById("site-header");
     const f = document.getElementById("site-footer");
-    if (h) h.outerHTML = header(page);
+    if (h) h.outerHTML = offerStrip() + header(page);
     if (f) f.outerHTML = footer();
     updateCount();
     setupSearch();

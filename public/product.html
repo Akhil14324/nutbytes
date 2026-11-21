@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>My Account – NutBytes</title>
-    <meta name="description" content="Log in or create a NutBytes account." />
+    <title>Snack – NutBytes</title>
+    <meta name="description" content="A handcrafted NutBytes snack made with nuts, seeds and dry fruits." />
     <meta name="theme-color" content="#fef5f0" />
     <link rel="icon" type="image/png" href="img/favicon.png" />
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
@@ -16,23 +16,25 @@
     />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
-  <body data-page="account">
+  <body data-page="product" data-nav="snacks">
     <div id="site-header"></div>
 
     <main>
-      <section class="page-hero">
-        <div class="container">
-          <p class="crumbs"><a href="index.html">Home</a> / My Account</p>
-          <h1>My Account</h1>
-          <p>Log in to check out faster and see your orders.</p>
-        </div>
-      </section>
       <section class="section" style="padding-top:28px">
-        <div class="container" data-account></div>
+        <div class="container">
+          <p class="crumbs" data-crumb></p>
+          <div data-product></div>
+          <section class="related" aria-labelledby="related-title">
+            <h2 id="related-title">You may also like</h2>
+            <div class="product-grid" data-related></div>
+          </section>
+        </div>
       </section>
     </main>
 
     <div id="site-footer"></div>
+
+    <script src="data/catalog.js"></script>
 
     <script src="js/data.js"></script>
     <script src="js/store.js"></script>

@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Order Placed – NutBytes</title>
-    <meta name="description" content="Your NutBytes order has been placed." />
+    <title>Checkout – NutBytes</title>
+    <meta name="description" content="Enter your details and delivery address to place your NutBytes order." />
     <meta name="theme-color" content="#fef5f0" />
     <link rel="icon" type="image/png" href="img/favicon.png" />
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
@@ -16,16 +16,24 @@
     />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
-  <body data-page="confirmation">
+  <body data-page="checkout">
     <div id="site-header"></div>
 
     <main>
-      <section class="section">
-        <div class="container" data-confirm></div>
+      <section class="page-hero">
+        <div class="container">
+          <p class="crumbs"><a href="index.html">Home</a> / <a href="cart.html">Cart</a> / Checkout</p>
+          <h1>Checkout</h1>
+        </div>
+      </section>
+      <section class="section" style="padding-top:28px">
+        <div class="container" data-checkout></div>
       </section>
     </main>
 
     <div id="site-footer"></div>
+
+    <script src="data/catalog.js"></script>
 
     <script src="js/data.js"></script>
     <script src="js/store.js"></script>

@@ -1,5 +1,4 @@
-import type { Offer } from "../offers";
-import type { Product } from "../products";
+import { COLLECTIONS, type Offer, type Product } from "../catalog";
 
 export class Invalid extends Error {}
 
@@ -11,33 +10,37 @@ const str = (v: unknown, name: string, max: number, required = true) => {
   return t;
 };
 
-const IMG_OK = /^\/img\/(menu|uploads)\/[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp)$/;
+const IMG_OK = /^img\/(products|uploads)\/[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp)$/;
 export const UPLOAD_OK = /^public\/img\/uploads\/[a-z0-9-]+\.jpg$/;
-export const DELETE_OK = /^public\/img\/(menu|uploads)\/[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp)$/;
+export const DELETE_OK = /^public\/img\/(products|uploads)\/[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp)$/;
 
 export function cleanProducts(input: unknown): Product[] {
-  if (!Array.isArray(input) || input.length < 1) throw new Invalid("The menu needs at least one item.");
-  if (input.length > 60) throw new Invalid("Too many menu items (max 60).");
+  if (!Array.isArray(input) || input.length < 1) throw new Invalid("The shop needs at least one product.");
+  if (input.length > 60) throw new Invalid("Too many products (max 60).");
   const seen = new Set<string>();
+  const collections = new Set<string>(COLLECTIONS.map((c) => c.id));
   return input.map((raw, i) => {
     const r = (raw ?? {}) as Record<string, unknown>;
-    const label = `Item ${i + 1}`;
+    const label = `Product ${i + 1}`;
     const id = str(r.id, `${label} id`, 80);
     if (!/^[a-z0-9-]+$/.test(id)) throw new Invalid(`${label} has an invalid id.`);
-    if (seen.has(id)) throw new Invalid(`Two items share the id "${id}".`);
+    if (seen.has(id)) throw new Invalid(`Two products share the id "${id}".`);
     seen.add(id);
     const img = str(r.img, `${label} photo`, 200);
     if (!IMG_OK.test(img)) throw new Invalid(`${label} has an invalid photo.`);
-    const tint = str(r.tint, `${label} colour`, 7);
-    if (!/^#[0-9a-fA-F]{6}$/.test(tint)) throw new Invalid(`${label} has an invalid colour.`);
+    const collection = str(r.collection, `${label} collection`, 40);
+    if (!collections.has(collection)) throw new Invalid(`${label} has an unknown collection.`);
+    const price = Number(r.price);
+    if (!Number.isInteger(price) || price < 1 || price > 100000)
+      throw new Invalid(`${label} needs a whole-rupee price between 1 and 100000.`);
     return {
       id,
-      en: str(r.en, `${label} English name`, 80),
-      te: str(r.te, `${label} Telugu name`, 120, false),
-      blurbEn: str(r.blurbEn, `${label} English description`, 240, false),
-      blurbTe: str(r.blurbTe, `${label} Telugu description`, 360, false),
+      name: str(r.name, `${label} name`, 80),
+      collection,
+      price,
+      short: str(r.short, `${label} description`, 240, false),
+      badge: str(r.badge ?? "", `${label} label`, 20, false),
       img,
-      tint,
     };
   });
 }
@@ -53,8 +56,7 @@ export function cleanOffers(input: unknown): Offer[] {
     if (until && !/^\d{4}-\d{2}-\d{2}$/.test(until)) throw new Invalid(`Offer ${i + 1} has an invalid end date.`);
     return {
       id,
-      en: str(r.en, `Offer ${i + 1} English text`, 160),
-      te: str(r.te ?? "", `Offer ${i + 1} Telugu text`, 240, false),
+      text: str(r.text, `Offer ${i + 1} text`, 160),
       until,
       active: r.active !== false,
     };

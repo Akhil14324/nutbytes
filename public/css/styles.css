@@ -2120,3 +2120,16 @@ html.intro-pending body {
     transform: none;
   }
 }
+
+/* offers banner (edited in /admin) */
+.offer-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 24px;
+  padding: 8px 16px;
+  background: #5a3a2a;
+  color: #fef5f0;
+  font-size: 0.875rem;
+  text-align: center;
+}

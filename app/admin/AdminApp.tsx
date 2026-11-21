@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Offer } from "@/lib/offers";
-import type { Product } from "@/lib/products";
+import { COLLECTIONS, type Offer, type Product } from "@/lib/catalog";
 
 type Tab = "menu" | "offers" | "photos";
 type Load = { products: Product[]; offers: Offer[]; photos: string[]; mode: "local" | "github" };
@@ -125,7 +124,7 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
   const [tab, setTab] = useState<Tab>("menu");
   const [products, setProducts] = useState<Product[]>(initial.products);
   const [offers, setOffers] = useState<Offer[]>(initial.offers);
-  const [photos, setPhotos] = useState<string[]>(initial.photos); // site paths like /img/menu/x.jpg
+  const [photos, setPhotos] = useState<string[]>(initial.photos); // site paths like img/products/x.webp
   const [pending, setPending] = useState<Record<string, string>>({}); // new photos: site path to data URL
   const [removed, setRemoved] = useState<string[]>([]); // site paths to delete on publish
   const [saved, setSaved] = useState(() => JSON.stringify([initial.products, initial.offers]));
@@ -143,16 +142,16 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
     return () => window.removeEventListener("beforeunload", on);
   }, [dirty]);
 
-  const src = (p: string) => pending[p] ?? p;
+  const src = (p: string) => pending[p] ?? `/${p}`;
   const usedBy = useMemo(() => {
     const m = new Map<string, string[]>();
-    for (const p of products) m.set(p.img, [...(m.get(p.img) ?? []), p.en || "New item"]);
+    for (const p of products) m.set(p.img, [...(m.get(p.img) ?? []), p.name || "New product"]);
     return m;
   }, [products]);
 
   const addPhoto = async (file: File, hint: string) => {
     const dataUrl = await shrink(file);
-    const path = `/img/uploads/${slug(hint)}-${uid()}.jpg`;
+    const path = `img/uploads/${slug(hint)}-${uid()}.jpg`;
     setPending((m) => ({ ...m, [path]: dataUrl }));
     setPhotos((l) => [path, ...l]);
     return path;
@@ -178,7 +177,7 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
     try {
       const uploads = Object.entries(pending)
         .filter(([path]) => photos.includes(path))
-        .map(([path, url]) => ({ path: `public${path}`, data: url.split(",")[1] }));
+        .map(([path, url]) => ({ path: `public/${path}`, data: url.split(",")[1] }));
       const res = await fetch("/api/admin/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -186,7 +185,7 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
           products,
           offers,
           uploads,
-          deletes: removed.map((p) => `public${p}`),
+          deletes: removed.map((p) => `public/${p}`),
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -228,7 +227,7 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
       <nav className="adm-tabs" aria-label="Sections">
         {(["menu", "offers", "photos"] as Tab[]).map((t) => (
           <button key={t} className={tab === t ? "on" : ""} onClick={() => setTab(t)} aria-pressed={tab === t}>
-            {t === "menu" ? `Menu (${products.length})` : t === "offers" ? `Offers (${offers.length})` : `Photos (${photos.length})`}
+            {t === "menu" ? `Products (${products.length})` : t === "offers" ? `Offers (${offers.length})` : `Photos (${photos.length})`}
           </button>
         ))}
       </nav>
@@ -314,7 +313,7 @@ function MenuTab({
     const id = `item-${uid()}`;
     setProducts((l) => [
       ...l,
-      { id, en: "", te: "", blurbEn: "", blurbTe: "", img: photos[0] ?? "/img/menu/coconutty-ball.jpg", tint: "#F7EBD3" },
+      { id, name: "", collection: COLLECTIONS[0].id, price: 199, short: "", badge: "", img: photos[0] ?? "img/products/coconutty-ball.webp" },
     ]);
     setOpen(id);
   };
@@ -322,8 +321,8 @@ function MenuTab({
   return (
     <section>
       <div className="adm-row">
-        <p className="adm-muted">Items appear on the site in this order. Telugu is optional; English is shown if it is empty.</p>
-        <button className="adm-btn adm-primary" onClick={add}>+ Add item</button>
+        <p className="adm-muted">Products appear in the shop in this order. Prices are for 250 g; 500 g and 1 kg are worked out from it.</p>
+        <button className="adm-btn adm-primary" onClick={add}>+ Add product</button>
       </div>
       <ul className="adm-list">
         {products.map((p, i) => (
@@ -332,17 +331,18 @@ function MenuTab({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src(p.img)} alt="" className="adm-thumb" />
               <button className="adm-name" onClick={() => setOpen(open === p.id ? null : p.id)} aria-expanded={open === p.id}>
-                {p.en || <em>New item (add a name)</em>}
+                {p.name || <em>New product (add a name)</em>}
+                <span className="adm-muted"> · ₹{p.price}</span>
               </button>
               <div className="adm-actions">
                 <button className="adm-icon" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
                 <button className="adm-icon" onClick={() => move(i, 1)} disabled={i === products.length - 1} aria-label="Move down">↓</button>
                 <button
                   className="adm-icon adm-danger"
-                  aria-label={`Remove ${p.en || "item"}`}
+                  aria-label={`Remove ${p.name || "product"}`}
                   disabled={products.length <= 1}
                   onClick={() => {
-                    if (confirm(`Remove "${p.en || "this item"}" from the menu?`)) setProducts((l) => l.filter((x) => x.id !== p.id));
+                    if (confirm(`Remove "${p.name || "this product"}" from the shop?`)) setProducts((l) => l.filter((x) => x.id !== p.id));
                   }}
                 >
                   ✕
@@ -353,25 +353,36 @@ function MenuTab({
             {open === p.id && (
               <div className="adm-form">
                 <label>
-                  Name (English)
-                  <input value={p.en} maxLength={80} onChange={(e) => patch(p.id, { en: e.target.value })} />
+                  Name
+                  <input value={p.name} maxLength={80} onChange={(e) => patch(p.id, { name: e.target.value })} />
                 </label>
                 <label>
-                  Name (Telugu)
-                  <input value={p.te} maxLength={120} onChange={(e) => patch(p.id, { te: e.target.value })} />
+                  Collection
+                  <select value={p.collection} onChange={(e) => patch(p.id, { collection: e.target.value })}>
+                    {COLLECTIONS.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
                 </label>
                 <label>
-                  Description (English)
-                  <textarea rows={2} value={p.blurbEn} maxLength={240} onChange={(e) => patch(p.id, { blurbEn: e.target.value })} />
+                  Price for 250 g (₹)
+                  <input
+                    type="number"
+                    min={1}
+                    max={100000}
+                    step={1}
+                    inputMode="numeric"
+                    value={Number.isFinite(p.price) ? p.price : ""}
+                    onChange={(e) => patch(p.id, { price: Math.round(Number(e.target.value)) })}
+                  />
                 </label>
                 <label>
-                  Description (Telugu)
-                  <textarea rows={2} value={p.blurbTe} maxLength={360} onChange={(e) => patch(p.id, { blurbTe: e.target.value })} />
+                  Description
+                  <textarea rows={2} value={p.short} maxLength={240} onChange={(e) => patch(p.id, { short: e.target.value })} />
                 </label>
-                <label className="adm-color">
-                  Background colour
-                  <input type="color" value={p.tint} onChange={(e) => patch(p.id, { tint: e.target.value.toUpperCase() })} />
-                  <span className="adm-muted">{p.tint}</span>
+                <label>
+                  Label on the card (optional, e.g. New, Bestseller)
+                  <input value={p.badge} maxLength={20} onChange={(e) => patch(p.id, { badge: e.target.value })} />
                 </label>
                 <fieldset>
                   <legend>Photo</legend>
@@ -390,7 +401,7 @@ function MenuTab({
                       </button>
                     ))}
                   </div>
-                  <UploadInner addPhoto={addPhoto} hint={p.en} label="Upload a new photo" onAdded={(path) => patch(p.id, { img: path })} />
+                  <UploadInner addPhoto={addPhoto} hint={p.name} label="Upload a new photo" onAdded={(path) => patch(p.id, { img: path })} />
                 </fieldset>
               </div>
             )}
@@ -407,10 +418,10 @@ function OffersTab({ offers, setOffers }: { offers: Offer[]; setOffers: React.Di
   return (
     <section>
       <div className="adm-row">
-        <p className="adm-muted">Active offers show in a banner under the top of the home page. Set an end date and it hides itself.</p>
+        <p className="adm-muted">Active offers show in a banner at the top of every page. Set an end date and it hides itself.</p>
         <button
           className="adm-btn adm-primary"
-          onClick={() => setOffers((l) => [...l, { id: `offer-${uid()}`, en: "", te: "", until: "", active: true }])}
+          onClick={() => setOffers((l) => [...l, { id: `offer-${uid()}`, text: "", until: "", active: true }])}
         >
           + Add offer
         </button>
@@ -420,12 +431,8 @@ function OffersTab({ offers, setOffers }: { offers: Offer[]; setOffers: React.Di
         {offers.map((o) => (
           <li key={o.id} className="adm-card adm-form">
             <label>
-              Offer text (English)
-              <input value={o.en} maxLength={160} placeholder="e.g. 10% off gift boxes this Diwali" onChange={(e) => patch(o.id, { en: e.target.value })} />
-            </label>
-            <label>
-              Offer text (Telugu)
-              <input value={o.te} maxLength={240} onChange={(e) => patch(o.id, { te: e.target.value })} />
+              Offer text
+              <input value={o.text} maxLength={160} placeholder="e.g. 10% off gift boxes this Diwali" onChange={(e) => patch(o.id, { text: e.target.value })} />
             </label>
             <div className="adm-row">
               <label>
@@ -468,7 +475,7 @@ function PhotosTab({
   return (
     <section>
       <div className="adm-row">
-        <p className="adm-muted">Photos you can use on menu items. A photo that an item uses cannot be deleted until you change that item.</p>
+        <p className="adm-muted">Photos you can use on products. A photo that a product uses cannot be deleted until you change that product.</p>
         <UploadInner addPhoto={addPhoto} hint="" label="+ Upload photos" />
       </div>
       <ul className="adm-grid">
