@@ -22,7 +22,10 @@
 
   /* ---------------- cart ---------------- */
   const cleanCart = (items) =>
-    (Array.isArray(items) ? items : []).filter((i) => NB.productById(i.id) && i.qty > 0);
+    (Array.isArray(items) ? items : [])
+      .filter((i) => NB.productById(i.id) && i.qty > 0)
+      // a pack size removed in /admin falls back to the first size
+      .map((i) => (NB.WEIGHTS.some((w) => w.id === i.weight) ? i : { ...i, weight: NB.WEIGHTS[0].id }));
 
   NB.cart = {
     items: () => cleanCart(read(KEYS.cart, [])),

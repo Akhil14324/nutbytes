@@ -34,12 +34,17 @@
     el.className = "intro";
     el.setAttribute("role", "img");
     el.setAttribute("aria-label", "NutBytes – Healthy Snacking");
-    el.innerHTML = `
-      <div class="intro-scene" aria-hidden="true">
-        <picture>
+    // the banner photo set in /admin, if any, so the intro opens on the same picture as the page
+    const custom = NB.CONTENT && NB.CONTENT.heroImg;
+    const photo = custom
+      ? `<img class="intro-photo" src="${NB.esc(custom)}" alt="" />`
+      : `<picture>
           <source media="(max-width: 860px)" srcset="img/hero-banner-mobile.webp" />
           <img class="intro-photo" src="img/hero-banner.webp" srcset="img/hero-banner-960.webp 960w, img/hero-banner.webp 1671w" sizes="100vw" alt="" />
-        </picture>
+        </picture>`;
+    el.innerHTML = `
+      <div class="intro-scene" aria-hidden="true">
+        ${photo}
         <div class="intro-sun"></div>
       </div>
       <div class="intro-wash" aria-hidden="true"></div>

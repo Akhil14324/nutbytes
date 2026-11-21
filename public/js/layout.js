@@ -97,7 +97,9 @@
   }
 
   function footer() {
-    const S = NB.SITE;
+    // business details come from /admin, so escape them like any other text
+    const S = Object.fromEntries(Object.entries(NB.SITE).map(([k, v]) => [k, esc(v)]));
+    const blurb = esc(NB.CONTENT.footerBlurb || "Wholesome, delicious snacks for a healthier and happier you.");
     return `
 <footer class="site-footer" id="contact">
   <div class="footer-inner">
@@ -106,9 +108,9 @@
         ${NB.logoMark(96, "brand-logo-lg")}
         <span class="brand-text"><span class="brand-name">NutBytes</span><span class="brand-tag">Healthy Snacking</span></span>
       </a>
-      <p>Wholesome, delicious snacks for a healthier and happier you.</p>
+      <p>${blurb}</p>
       <div class="socials">
-        <a href="${S.instagram}" target="_blank" rel="noopener noreferrer" aria-label="NutBytes on Instagram">${NB.icon.instagram()}</a>
+        ${S.instagram ? `<a href="${S.instagram}" target="_blank" rel="noopener noreferrer" aria-label="NutBytes on Instagram">${NB.icon.instagram()}</a>` : ""}
         <a href="#" data-wa aria-label="Chat with NutBytes on WhatsApp">${NB.icon.whatsapp()}</a>
       </div>
     </div>
@@ -142,7 +144,7 @@
   </div>
   <div class="footer-base">
     <span>© ${new Date().getFullYear()} NutBytes. All rights reserved.</span>
-    <span>FSSAI Reg. No. ${S.fssai}</span>
+    ${S.fssai ? `<span>FSSAI Reg. No. ${S.fssai}</span>` : ""}
   </div>
 </footer>
 <a class="wa-float" href="#" data-wa aria-label="Order on WhatsApp">${NB.icon.whatsapp(28)}</a>
@@ -193,7 +195,7 @@
     const s = q.trim().toLowerCase();
     if (!s) return [];
     return NB.PRODUCTS.filter((p) =>
-      [p.name, p.short, NB.collectionById(p.collection).name].join(" ").toLowerCase().includes(s)
+      [p.name, p.short, (NB.collectionById(p.collection) || {}).name].join(" ").toLowerCase().includes(s)
     );
   }
   NB.search = searchResults;
@@ -214,7 +216,7 @@
           ? found
               .map(
                 (p) => `<li><a href="product.html?id=${p.id}"><img src="${p.img}" alt="" width="52" height="52" loading="lazy" />
-                  <span><b>${esc(p.name)}</b><small>${NB.money(p.price)} · ${esc(NB.collectionById(p.collection).name)}</small></span></a></li>`
+                  <span><b>${esc(p.name)}</b><small>${NB.money(p.price)} · ${esc((NB.collectionById(p.collection) || {}).name || "")}</small></span></a></li>`
               )
               .join("") + `<li class="search-all"><a href="products.html?q=${encodeURIComponent(q)}">See all results ${NB.icon.arrow(16)}</a></li>`
           : `<li class="search-empty">No snacks match “${esc(q)}”.</li>`;
@@ -266,7 +268,7 @@
 
   /** Product card used by the shop grid and "you may also like". */
   NB.productCard = (p) => {
-    const c = NB.collectionById(p.collection);
+    const c = NB.collectionById(p.collection) || NB.COLLECTIONS[0];
     return `<article class="product-card tone-${c.tone}" data-reveal>
       <a class="product-card-img" href="product.html?id=${p.id}">
         <img src="${p.img}" alt="${esc(p.name)}" width="400" height="400" loading="lazy" />
@@ -277,27 +279,55 @@
         <h3><a href="product.html?id=${p.id}">${esc(p.name)}</a></h3>
         <p>${esc(p.short)}</p>
         <div class="product-card-foot">
-          <span class="price">${NB.money(p.price)} <small>/ 250 g</small></span>
+          <span class="price">${NB.money(p.price)} <small>/ ${esc(NB.baseWeight())}</small></span>
           <button class="btn btn-brown btn-sm" type="button" data-add="${p.id}" aria-label="Add ${esc(p.name)} to cart">Add ${NB.icon.plus(14)}</button>
         </div>
       </div>
     </article>`;
   };
 
-  /** Any [data-add] button adds the 250 g pack of that product. */
+  /** Any [data-add] button adds the first (smallest) pack of that product. */
   function setupQuickAdd() {
     document.addEventListener("click", (e) => {
       const b = e.target.closest("[data-add]");
       if (!b) return;
       const p = NB.productById(b.dataset.add);
       NB.cart.add(p.id, NB.WEIGHTS[0].id, 1);
-      NB.toast(`${p.name} (250 g) added to your cart`);
+      NB.toast(`${p.name} (${NB.baseWeight()}) added to your cart`);
       b.classList.add("is-added");
       setTimeout(() => b.classList.remove("is-added"), 900);
     });
   }
 
   NB.reveal = setupReveal;
+
+  /** Puts the wording, photos and business details set in /admin onto the page:
+   *   [data-content="key"]      text from NB.CONTENT (kept as written in the HTML if not set)
+   *   [data-content-img="key"]  photo from NB.CONTENT (drops the built-in responsive versions)
+   *   [data-site="key"]         business detail from NB.SITE */
+  function applyContent() {
+    const C = NB.CONTENT || {};
+    document.querySelectorAll("[data-content]").forEach((el) => {
+      const v = C[el.dataset.content];
+      if (v) el.textContent = v;
+    });
+    document.querySelectorAll("[data-content-img]").forEach((img) => {
+      const v = C[img.dataset.contentImg];
+      if (!v) return;
+      const pic = img.closest("picture");
+      if (pic) pic.querySelectorAll("source").forEach((s) => s.remove());
+      img.removeAttribute("srcset");
+      img.src = v;
+      img.alt = ""; // the built-in description no longer fits the new photo
+    });
+    document.querySelectorAll("[data-site]").forEach((el) => {
+      const v = NB.SITE[el.dataset.site];
+      if (v) el.textContent = v;
+    });
+  }
+  // this script loads at the end of <body>, so the page's own elements are already there:
+  // apply right away rather than on DOMContentLoaded, so the old text never shows
+  applyContent();
 
   document.addEventListener("DOMContentLoaded", () => {
     const page = document.body.dataset.nav || document.body.dataset.page || "";

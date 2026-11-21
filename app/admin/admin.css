@@ -187,6 +187,10 @@
 .adm input[type="text"],
 .adm input[type="password"],
 .adm input[type="date"],
+.adm input[type="number"],
+.adm input[type="email"],
+.adm input[type="url"],
+.adm select,
 .adm input:not([type]),
 .adm textarea {
   width: 100%;
@@ -277,4 +281,45 @@
   background: #fff;
   border-top: 1px solid var(--a-line);
   box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* full-control tabs */
+.adm-tabs {
+  flex-wrap: wrap;
+}
+.adm a.adm-btn {
+  text-decoration: none;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+}
+.adm-form h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.adm section > .adm-card + .adm-card {
+  margin-top: 14px;
+}
+.adm-note {
+  margin: 0 0 8px;
+  font-weight: 400;
+}
+.adm-off {
+  opacity: 0.6;
+}
+.adm-off .adm-thumb {
+  filter: grayscale(1);
+}
+.adm-row.adm-2 > label {
+  flex: 1 1 240px;
+}
+.adm-size {
+  align-items: flex-end;
+}
+.adm-size > label {
+  flex: 1 1 160px;
+}
+.adm input:disabled {
+  background: #f3efe9;
+  color: var(--a-muted);
 }

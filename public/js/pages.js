@@ -139,7 +139,7 @@
           <li>${NB.icon.check()} No processed sugar</li>
           <li>${NB.icon.check()} No maida</li>
           <li>${NB.icon.check()} FSSAI registered</li>
-          <li>${NB.icon.check()} Delivering in Ongole and nearby areas</li>
+          <li>${NB.icon.check()} Delivering in ${esc(NB.SITE.deliveryArea)}</li>
         </ul>
       </div>
     </div>`;

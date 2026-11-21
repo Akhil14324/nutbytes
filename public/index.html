@@ -40,6 +40,7 @@
         <picture class="hero-bg">
           <source media="(max-width: 860px)" srcset="img/hero-banner-mobile.webp" />
           <img
+            data-content-img="heroImg"
             src="img/hero-banner.webp"
             srcset="img/hero-banner-960.webp 960w, img/hero-banner.webp 1671w"
             sizes="100vw"
@@ -52,11 +53,11 @@
         <div class="hero-inner">
           <div class="hero-copy" data-reveal>
             <h1 id="hero-title">
-              Deliciously Handcrafted Sweets and Treats made with Love
-              <span class="sub">Perfect for every celebration <span class="heart" data-icon="heart"></span></span>
+              <span data-content="heroTitle">Deliciously Handcrafted Sweets and Treats made with Love</span>
+              <span class="sub"><span data-content="heroSub">Perfect for every celebration</span> <span class="heart" data-icon="heart"></span></span>
             </h1>
-            <p class="hero-text">Nutritious and delicious snacks made with the finest nuts, seeds and dry fruits.</p>
-            <a class="btn btn-brown" href="products.html">Explore Our Snacks <span data-icon="arrow"></span></a>
+            <p class="hero-text" data-content="heroText">Nutritious and delicious snacks made with the finest nuts, seeds and dry fruits.</p>
+            <a class="btn btn-brown" href="products.html"><span data-content="heroButton">Explore Our Snacks</span> <span data-icon="arrow"></span></a>
           </div>
         </div>
       </section>
@@ -66,22 +67,22 @@
           <li data-reveal>
             <span class="benefit-icon leaf" data-icon="leaf"></span>
             <div>
-              <h3>Naturally Nutritious</h3>
-              <p>Goodness of nuts, seeds and dry fruits.</p>
+              <h3 data-content="benefit1Title">Naturally Nutritious</h3>
+              <p data-content="benefit1Text">Goodness of nuts, seeds and dry fruits.</p>
             </div>
           </li>
           <li data-reveal>
             <span class="benefit-icon heart" data-icon="heart"></span>
             <div>
-              <h3>No Preservatives</h3>
-              <p>Pure, natural and honest snacking.</p>
+              <h3 data-content="benefit2Title">No Preservatives</h3>
+              <p data-content="benefit2Text">Pure, natural and honest snacking.</p>
             </div>
           </li>
           <li data-reveal>
             <span class="benefit-icon bolt" data-icon="bolt"></span>
             <div>
-              <h3>Energy Boost</h3>
-              <p>A healthy bite anytime, anywhere.</p>
+              <h3 data-content="benefit3Title">Energy Boost</h3>
+              <p data-content="benefit3Text">A healthy bite anytime, anywhere.</p>
             </div>
           </li>
         </ul>
@@ -97,6 +98,7 @@
         <div class="about-inner">
           <div class="about-media" data-reveal>
             <img
+              data-content-img="aboutImg"
               src="img/about-packaging-v2.webp"
               alt="NutBytes gift packaging illustrated with an elephant, palace and leaves"
               width="520"
@@ -105,8 +107,8 @@
             />
           </div>
           <div class="about-copy" data-reveal>
-            <h2 id="about-title">A Little Bite<br />of Goodness <span class="heart" data-icon="heart"></span></h2>
-            <p>
+            <h2 id="about-title"><span data-content="aboutTitle">A Little Bite<br />of Goodness</span> <span class="heart" data-icon="heart"></span></h2>
+            <p data-content="aboutText">
               At <b>NutBytes</b>, we bring you healthy snacking crafted with care, using high-quality ingredients and a
               whole lot of love.
             </p>
