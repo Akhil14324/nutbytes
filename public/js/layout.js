@@ -216,7 +216,7 @@
           ? found
               .map(
                 (p) => `<li><a href="product.html?id=${p.id}"><img src="${p.img}" alt="" width="52" height="52" loading="lazy" />
-                  <span><b>${esc(p.name)}</b><small>${NB.money(p.price)} · ${esc((NB.collectionById(p.collection) || {}).name || "")}</small></span></a></li>`
+                  <span><b>${esc(p.name)}</b><small>${p.soldOut ? "Sold out" : NB.money(NB.priceFor(p, NB.WEIGHTS[0].id))} ·${esc((NB.collectionById(p.collection) || {}).name || "")}</small></span></a></li>`
               )
               .join("") + `<li class="search-all"><a href="products.html?q=${encodeURIComponent(q)}">See all results ${NB.icon.arrow(16)}</a></li>`
           : `<li class="search-empty">No snacks match “${esc(q)}”.</li>`;
@@ -269,18 +269,31 @@
   /** Product card used by the shop grid and "you may also like". */
   NB.productCard = (p) => {
     const c = NB.collectionById(p.collection) || NB.COLLECTIONS[0];
-    return `<article class="product-card tone-${c.tone}" data-reveal>
+    const off = NB.discountFor(p);
+    const w = NB.WEIGHTS[0].id;
+    // sold out wins over an offer, and an offer over the product's own label
+    const badge = p.soldOut
+      ? `<span class="badge badge-sold">Sold out</span>`
+      : off
+        ? `<span class="badge badge-off">${off}% off</span>`
+        : p.badge
+          ? `<span class="badge">${esc(p.badge)}</span>`
+          : "";
+    const button = p.soldOut
+      ? `<button class="btn btn-outline btn-sm" type="button" disabled>Sold out</button>`
+      : `<button class="btn btn-brown btn-sm" type="button" data-add="${p.id}" aria-label="Add ${esc(p.name)} to cart">Add ${NB.icon.plus(14)}</button>`;
+    return `<article class="product-card tone-${c.tone}${p.soldOut ? " is-sold-out" : ""}" data-reveal>
       <a class="product-card-img" href="product.html?id=${p.id}">
         <img src="${p.img}" alt="${esc(p.name)}" width="400" height="400" loading="lazy" />
-        ${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}
+        ${badge}
       </a>
       <div class="product-card-body">
         <span class="eyebrow">${esc(c.name)}</span>
         <h3><a href="product.html?id=${p.id}">${esc(p.name)}</a></h3>
         <p>${esc(p.short)}</p>
         <div class="product-card-foot">
-          <span class="price">${NB.money(p.price)} <small>/ ${esc(NB.baseWeight())}</small></span>
-          <button class="btn btn-brown btn-sm" type="button" data-add="${p.id}" aria-label="Add ${esc(p.name)} to cart">Add ${NB.icon.plus(14)}</button>
+          <span class="price">${NB.priceHtml(p, w)} <small>/ ${esc(NB.baseWeight())}</small></span>
+          ${button}
         </div>
       </div>
     </article>`;
@@ -292,6 +305,7 @@
       const b = e.target.closest("[data-add]");
       if (!b) return;
       const p = NB.productById(b.dataset.add);
+      if (!p || p.soldOut) return;
       NB.cart.add(p.id, NB.WEIGHTS[0].id, 1);
       NB.toast(`${p.name} (${NB.baseWeight()}) added to your cart`);
       b.classList.add("is-added");
@@ -320,6 +334,14 @@
       img.src = v;
       img.alt = ""; // the built-in description no longer fits the new photo
     });
+    // FAQs edited in /admin replace the ones written in help.html
+    const faq = document.querySelector("[data-faqs]");
+    if (faq && NB.FAQS) {
+      // {deliveryArea}, {fssai}, ... in an answer become the current business detail
+      const fill = (s) => esc(s).replace(/\{(\w+)\}/g, (m, k) => (NB.SITE[k] ? esc(NB.SITE[k]) : m));
+      faq.innerHTML = NB.FAQS.map((f) => `<details><summary>${fill(f.q)}</summary><p>${fill(f.a)}</p></details>`).join("");
+      if (!NB.FAQS.length) document.querySelectorAll("[data-faqs-part]").forEach((el) => el.remove());
+    }
     document.querySelectorAll("[data-site]").forEach((el) => {
       const v = NB.SITE[el.dataset.site];
       if (v) el.textContent = v;

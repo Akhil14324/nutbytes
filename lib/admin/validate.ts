@@ -1,10 +1,13 @@
 import {
   CONTENT_FIELDS,
   CONTENT_PHOTOS,
+  OFFER_SCOPES,
   TONES,
   type Collection,
   type Content,
+  type Faq,
   type Offer,
+  type OfferScope,
   type Product,
   type Site,
   type Weight,
@@ -103,27 +106,50 @@ export function cleanProducts(input: unknown, collections: Collection[], library
       badge: str(r.badge, `${name} label`, 20, false),
       img: photo(r.img, `${name} photo`, library),
       hidden: r.hidden === true,
+      soldOut: r.soldOut === true,
     };
   });
   if (list.every((p) => p.hidden)) throw new Invalid("At least one product must be shown in the shop.");
   return list;
 }
 
-export function cleanOffers(input: unknown): Offer[] {
+export function cleanOffers(input: unknown, products: Product[], collections: Collection[]): Offer[] {
   if (!Array.isArray(input)) throw new Invalid("Offers must be a list.");
   if (input.length > 20) throw new Invalid("Too many offers (max 20).");
   return input.map((raw, i) => {
     const r = (raw ?? {}) as Record<string, unknown>;
-    const id = str(r.id, `Offer ${i + 1} id`, 60);
-    if (!ID.test(id)) throw new Invalid(`Offer ${i + 1} has an invalid id.`);
-    const until = str(r.until, `Offer ${i + 1} end date`, 10, false);
-    if (until && !/^\d{4}-\d{2}-\d{2}$/.test(until)) throw new Invalid(`Offer ${i + 1} has an invalid end date.`);
-    return {
-      id,
-      text: str(r.text, `Offer ${i + 1} text`, 160),
-      until,
-      active: r.active !== false,
-    };
+    const label = `Offer ${i + 1}`;
+    const id = str(r.id, `${label} id`, 60);
+    if (!ID.test(id)) throw new Invalid(`${label} has an invalid id.`);
+    const until = str(r.until, `${label} end date`, 10, false);
+    if (until && !/^\d{4}-\d{2}-\d{2}$/.test(until)) throw new Invalid(`${label} has an invalid end date.`);
+    const text = str(r.text, `${label} text`, 160);
+
+    const discount = r.discount == null || r.discount === "" ? 0 : Number(r.discount);
+    if (!Number.isInteger(discount) || discount < 0 || discount > 90)
+      throw new Invalid(`"${text}": the discount must be a whole number from 0 to 90 (%).`);
+    const offer: Offer = { id, text, until, active: r.active !== false, discount };
+    if (!discount) return offer;
+
+    const scope = OFFER_SCOPES.includes(r.scope as OfferScope) ? (r.scope as OfferScope) : "all";
+    offer.scope = scope;
+    if (scope === "all") return offer;
+    const target = str(r.target, `"${text}" applies to`, 80);
+    if (scope === "collection" && !collections.some((c) => c.id === target))
+      throw new Invalid(`"${text}" is for a collection that no longer exists. Choose another one.`);
+    if (scope === "product" && !products.some((p) => p.id === target))
+      throw new Invalid(`"${text}" is for a product that no longer exists. Choose another one.`);
+    offer.target = target;
+    return offer;
+  });
+}
+
+export function cleanFaqs(input: unknown): Faq[] {
+  if (!Array.isArray(input)) throw new Invalid("FAQs must be a list.");
+  if (input.length > 30) throw new Invalid("Too many FAQs (max 30).");
+  return input.map((raw, i) => {
+    const r = (raw ?? {}) as Record<string, unknown>;
+    return { q: str(r.q, `FAQ ${i + 1} question`, 200), a: str(r.a, `FAQ ${i + 1} answer`, 800) };
   });
 }
 

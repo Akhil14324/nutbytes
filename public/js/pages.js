@@ -54,8 +54,10 @@
       });
       let list = q.value.trim() ? NB.search(q.value) : NB.PRODUCTS.slice();
       if (active !== "all") list = list.filter((p) => p.collection === active);
-      if (sort.value === "low") list.sort((a, b) => a.price - b.price);
-      if (sort.value === "high") list.sort((a, b) => b.price - a.price);
+      // sort by what the customer pays, after any offer
+      const pay = (p) => NB.priceFor(p, NB.WEIGHTS[0].id);
+      if (sort.value === "low") list.sort((a, b) => pay(a) - pay(b));
+      if (sort.value === "high") list.sort((a, b) => pay(b) - pay(a));
       if (sort.value === "name") list.sort((a, b) => a.name.localeCompare(b.name));
 
       const where = active === "all" ? "" : ` in ${NB.collectionById(active).name}`;
@@ -114,7 +116,10 @@
       <div class="pdp-info">
         <a class="eyebrow" href="products.html?c=${c.id}">${esc(c.name)}</a>
         <h1>${esc(p.name)}</h1>
-        <p class="pdp-price"><span data-price></span> <small data-per></small></p>
+        <p class="pdp-price"><span data-price></span> <small data-per></small>${
+          NB.discountFor(p) && !p.soldOut ? ` <span class="badge badge-off badge-inline">${NB.discountFor(p)}% off</span>` : ""
+        }</p>
+        ${p.soldOut ? `<p class="sold-out-note">Sold out for now. Message us on WhatsApp to hear when it's back.</p>` : ""}
         <p class="pdp-desc">${esc(p.short)}</p>
         <form data-buy>
           <span class="option-label" id="w-label">Choose a pack</span>
@@ -130,11 +135,13 @@
               <output data-qty aria-live="polite">1</output>
               <button type="button" data-step="1" aria-label="Increase quantity">${NB.icon.plus()}</button>
             </div>
-            <button class="btn btn-brown" type="submit">Add to Cart ${NB.icon.cart(18)}</button>
-            <button class="btn btn-outline" type="button" data-buy-now>Buy Now</button>
+            <button class="btn btn-brown" type="submit"${p.soldOut ? " disabled" : ""}>${p.soldOut ? "Sold out" : `Add to Cart ${NB.icon.cart(18)}`}</button>
+            <button class="btn btn-outline" type="button" data-buy-now${p.soldOut ? " disabled" : ""}>Buy Now</button>
           </div>
         </form>
-        <a class="btn btn-wa" style="margin-top:14px" data-wa-product href="#" target="_blank" rel="noopener noreferrer">${NB.icon.whatsapp(20)} Order this on WhatsApp</a>
+        <a class="btn btn-wa" style="margin-top:14px" data-wa-product href="#" target="_blank" rel="noopener noreferrer">${NB.icon.whatsapp(20)} ${
+          p.soldOut ? "Ask about this on WhatsApp" : "Order this on WhatsApp"
+        }</a>
         <ul class="trust-list">
           <li>${NB.icon.check()} No processed sugar</li>
           <li>${NB.icon.check()} No maida</li>
@@ -149,10 +156,12 @@
     const weight = () => form.weight.value;
     const update = () => {
       $("[data-qty]").textContent = qty;
-      $("[data-price]").textContent = NB.money(NB.priceFor(p, weight()) * qty);
+      $("[data-price]").innerHTML = NB.priceHtml(p, weight(), qty);
       $("[data-per]").textContent = `for ${qty} × ${NB.weightById(weight()).label}`;
       $("[data-wa-product]").href = NB.waLink(
-        `Hello NutBytes! I would like to order:\n• Product: ${p.name}, Weight: ${NB.weightById(weight()).label}, Quantity: ${qty}`
+        p.soldOut
+          ? `Hello NutBytes! Please let me know when ${p.name} is back in stock.`
+          : `Hello NutBytes! I would like to order:\n• Product: ${p.name}, Weight: ${NB.weightById(weight()).label}, Quantity: ${qty}`
       );
     };
     form.addEventListener("change", update);
@@ -164,10 +173,12 @@
     });
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      if (p.soldOut) return;
       NB.cart.add(p.id, weight(), qty);
       NB.toast(`${qty} × ${p.name} (${NB.weightById(weight()).label}) added to your cart`);
     });
     $("[data-buy-now]").addEventListener("click", () => {
+      if (p.soldOut) return;
       NB.cart.add(p.id, weight(), qty);
       location.href = "cart.html";
     });
@@ -199,7 +210,7 @@
             <a href="product.html?id=${l.id}"><img src="${l.product.img}" alt="" width="92" height="92" loading="lazy" /></a>
             <div>
               <h3><a href="product.html?id=${l.id}">${esc(l.product.name)}</a></h3>
-              <p class="cart-item-meta">${NB.money(l.unit)} each</p>
+              <p class="cart-item-meta">${NB.priceHtml(l.product, l.weight)} each${l.off ? ` · <b class="off-note">${l.off}% off</b>` : ""}</p>
               <div class="cart-item-ctl">
                 <select data-weight-select aria-label="Pack size for ${esc(l.product.name)}">${weightOptions(l.weight)}</select>
                 <div class="stepper sm" role="group" aria-label="Quantity of ${esc(l.product.name)}">

@@ -5,6 +5,7 @@ import {
   cleanCollections,
   cleanContent,
   cleanDeletes,
+  cleanFaqs,
   cleanOffers,
   cleanProducts,
   cleanSite,
@@ -58,13 +59,15 @@ export async function PUT(req: Request) {
     for (const d of deletes) library.delete(d.replace(/^public\//, ""));
 
     const collections = cleanCollections(body.collections, library);
+    const products = cleanProducts(body.products, collections, library);
     const catalog = {
-      products: cleanProducts(body.products, collections, library),
-      offers: cleanOffers(body.offers),
+      products,
+      offers: cleanOffers(body.offers, products, collections),
       site: cleanSite(body.site),
       collections,
       weights: cleanWeights(body.weights),
       content: cleanContent(body.content, library),
+      faqs: cleanFaqs(body.faqs),
     };
 
     const put: Record<string, string> = {

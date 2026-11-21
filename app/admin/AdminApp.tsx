@@ -8,6 +8,7 @@ import {
   type Catalog,
   type Collection,
   type Content,
+  type Faq,
   type Offer,
   type Product,
   type Site,
@@ -18,7 +19,8 @@ const TABS = [
   ["products", "Products"],
   ["offers", "Offers"],
   ["collections", "Collections"],
-  ["home", "Home page"],
+  ["home", "Page text"],
+  ["faqs", "FAQs"],
   ["business", "Business details"],
   ["sizes", "Pack sizes"],
   ["photos", "Photos"],
@@ -142,7 +144,7 @@ function Login({ onDone }: { onDone: () => void }) {
 }
 
 const snapshot = (c: Catalog) =>
-  JSON.stringify([c.products, c.offers, c.site, c.collections, c.weights, c.content]);
+  JSON.stringify([c.products, c.offers, c.site, c.collections, c.weights, c.content, c.faqs]);
 
 function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) {
   const [tab, setTab] = useState<Tab>("products");
@@ -152,6 +154,7 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
   const [collections, setCollections] = useState<Collection[]>(initial.collections);
   const [weights, setWeights] = useState<Weight[]>(initial.weights);
   const [content, setContent] = useState<Content>(initial.content);
+  const [faqs, setFaqs] = useState<Faq[]>(initial.faqs);
   const [photos, setPhotos] = useState<string[]>(initial.photos); // site paths like img/products/x.webp
   const [pending, setPending] = useState<Record<string, string>>({}); // new photos: site path to data URL
   const [removed, setRemoved] = useState<string[]>([]); // site paths to delete on publish
@@ -159,7 +162,7 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const catalog: Catalog = { products, offers, site, collections, weights, content };
+  const catalog: Catalog = { products, offers, site, collections, weights, content, faqs };
   const dirty = snapshot(catalog) !== saved || Object.keys(pending).length > 0 || removed.length > 0;
 
   // warn before closing the tab with unpublished changes
@@ -242,6 +245,7 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
   const count: Partial<Record<Tab, number>> = {
     products: products.length,
     offers: offers.length,
+    faqs: faqs.length,
     collections: collections.length,
     sizes: weights.length,
     photos: photos.length,
@@ -273,7 +277,8 @@ function Editor({ initial, onLogout }: { initial: Load; onLogout: () => void }) 
       {tab === "products" && (
         <ProductsTab products={products} setProducts={setProducts} collections={collections} weights={weights} {...pick} />
       )}
-      {tab === "offers" && <OffersTab offers={offers} setOffers={setOffers} />}
+      {tab === "offers" && <OffersTab offers={offers} setOffers={setOffers} products={products} collections={collections} />}
+      {tab === "faqs" && <FaqsTab faqs={faqs} setFaqs={setFaqs} />}
       {tab === "collections" && (
         <CollectionsTab collections={collections} setCollections={setCollections} products={products} {...pick} />
       )}
@@ -421,7 +426,11 @@ function ProductsTab({
               <img src={p.img ? pick.src(p.img) : ""} alt="" className="adm-thumb" />
               <button className="adm-name" onClick={() => setOpen(open === p.id ? null : p.id)} aria-expanded={open === p.id}>
                 {p.name || <em>New product (add a name)</em>}
-                <span className="adm-muted"> · ₹{p.price}{p.hidden ? " · hidden" : ""}</span>
+                <span className="adm-muted">
+                  {" "}· ₹{p.price}
+                  {p.hidden ? " · hidden" : ""}
+                  {p.soldOut && !p.hidden ? " · sold out" : ""}
+                </span>
               </button>
               <div className="adm-actions">
                 <button className="adm-icon" onClick={() => move(setProducts, i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
@@ -448,7 +457,11 @@ function ProductsTab({
                     disabled={!p.hidden && shown <= 1}
                     onChange={(e) => patch(p.id, { hidden: !e.target.checked })}
                   />
-                  Show in the shop (untick to hide it for now, e.g. when sold out)
+                  Show in the shop (untick to hide it completely)
+                </label>
+                <label className="adm-check">
+                  <input type="checkbox" checked={!!p.soldOut} onChange={(e) => patch(p.id, { soldOut: e.target.checked })} />
+                  Sold out (stays in the shop with a &ldquo;Sold out&rdquo; label; customers can&apos;t add it to the cart)
                 </label>
                 <label>
                   Name
@@ -492,13 +505,30 @@ function ProductsTab({
   );
 }
 
-function OffersTab({ offers, setOffers }: { offers: Offer[]; setOffers: Setter<Offer[]> }) {
+function OffersTab({
+  offers,
+  setOffers,
+  products,
+  collections,
+}: {
+  offers: Offer[];
+  setOffers: Setter<Offer[]>;
+  products: Product[];
+  collections: Collection[];
+}) {
   const patch = (id: string, next: Partial<Offer>) => setOffers((l) => l.map((o) => (o.id === id ? { ...o, ...next } : o)));
   return (
     <section>
       <div className="adm-row">
-        <p className="adm-muted">Active offers show in a banner at the top of every page. Set an end date and it hides itself.</p>
-        <button className="adm-btn adm-primary" onClick={() => setOffers((l) => [...l, { id: `offer-${uid()}`, text: "", until: "", active: true }])}>
+        <p className="adm-muted">
+          Active offers show in a banner at the top of every page. Add a discount to lower the prices too: the shop shows the old
+          price crossed out, and the cart, checkout and WhatsApp order use the offer price. If two discounts cover the same product,
+          the bigger one is used. Set an end date and the offer switches itself off.
+        </p>
+        <button
+          className="adm-btn adm-primary"
+          onClick={() => setOffers((l) => [...l, { id: `offer-${uid()}`, text: "", until: "", active: true, discount: 0, scope: "all" }])}
+        >
           + Add offer
         </button>
       </div>
@@ -510,6 +540,54 @@ function OffersTab({ offers, setOffers }: { offers: Offer[]; setOffers: Setter<O
               Offer text
               <input value={o.text} maxLength={160} placeholder="e.g. 10% off gift boxes this Diwali" onChange={(e) => patch(o.id, { text: e.target.value })} />
             </label>
+            <div className="adm-row adm-2">
+              <label>
+                Discount (%)
+                <input
+                  type="number"
+                  min={0}
+                  max={90}
+                  step={1}
+                  inputMode="numeric"
+                  value={o.discount || ""}
+                  placeholder="0 = banner only"
+                  onChange={(e) => patch(o.id, { discount: Math.max(0, Math.min(90, Math.round(Number(e.target.value) || 0))) })}
+                />
+              </label>
+              {!!o.discount && (
+                <label>
+                  Applies to
+                  <select
+                    value={o.scope === "all" || !o.scope ? "all" : `${o.scope}:${o.target ?? ""}`}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "all") return patch(o.id, { scope: "all", target: undefined });
+                      const [scope, target] = v.split(":") as ["collection" | "product", string];
+                      patch(o.id, { scope, target });
+                    }}
+                  >
+                    <option value="all">Everything in the shop</option>
+                    <optgroup label="A collection">
+                      {collections.map((c) => (
+                        <option key={c.id} value={`collection:${c.id}`}>{c.name || "(unnamed collection)"}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="One product">
+                      {products.map((p) => (
+                        <option key={p.id} value={`product:${p.id}`}>{p.name || "(unnamed product)"}</option>
+                      ))}
+                    </optgroup>
+                    {o.scope !== "all" &&
+                      o.scope &&
+                      !(o.scope === "collection" ? collections : products).some((x) => x.id === o.target) && (
+                        <option value={`${o.scope}:${o.target ?? ""}`} disabled>
+                          (removed, choose another)
+                        </option>
+                      )}
+                  </select>
+                </label>
+              )}
+            </div>
             <div className="adm-row">
               <label>
                 Last day (optional)
@@ -624,7 +702,9 @@ function HomeTab({ content, setContent, ...pick }: Pick & { content: Content; se
   const groups = [...new Set(CONTENT_FIELDS.map((f) => f.group))];
   return (
     <section>
-      <p className="adm-muted">Leave a box empty to keep the wording shown in grey. Changes show on the home page and in the footer.</p>
+      <p className="adm-muted">
+        Leave a box empty to keep the wording shown in grey. Changes show on the home page, the About page and in the footer.
+      </p>
       {groups.map((g) => (
         <div key={g} className="adm-card adm-form">
           <h2>{g}</h2>
@@ -657,6 +737,52 @@ function HomeTab({ content, setContent, ...pick }: Pick & { content: Content; se
           )}
         </div>
       ))}
+    </section>
+  );
+}
+
+function FaqsTab({ faqs, setFaqs }: { faqs: Faq[]; setFaqs: Setter<Faq[]> }) {
+  const patch = (i: number, next: Partial<Faq>) => setFaqs((l) => l.map((f, j) => (j === i ? { ...f, ...next } : f)));
+  return (
+    <section>
+      <div className="adm-row">
+        <p className="adm-muted">
+          Questions on the Customer Care page, in this order. Write {"{deliveryArea}"}, {"{fssai}"}, {"{phoneDisplay}"} or {"{email}"} in an
+          answer to show the current business detail.
+        </p>
+        <button className="adm-btn adm-primary" onClick={() => setFaqs((l) => [...l, { q: "", a: "" }])}>+ Add question</button>
+      </div>
+      {faqs.length === 0 && <p className="adm-card adm-muted">No questions. The FAQs section will be left out.</p>}
+      <ul className="adm-list">
+        {faqs.map((f, i) => (
+          <li key={i} className="adm-card adm-form">
+            <div className="adm-item-head">
+              <strong className="adm-name">Question {i + 1}</strong>
+              <div className="adm-actions">
+                <button className="adm-icon" onClick={() => move(setFaqs, i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
+                <button className="adm-icon" onClick={() => move(setFaqs, i, 1)} disabled={i === faqs.length - 1} aria-label="Move down">↓</button>
+                <button
+                  className="adm-icon adm-danger"
+                  aria-label={`Remove question ${i + 1}`}
+                  onClick={() => {
+                    if (confirm("Remove this question?")) setFaqs((l) => l.filter((_, j) => j !== i));
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <label>
+              Question
+              <input value={f.q} maxLength={200} onChange={(e) => patch(i, { q: e.target.value })} />
+            </label>
+            <label>
+              Answer
+              <textarea rows={3} value={f.a} maxLength={800} onChange={(e) => patch(i, { a: e.target.value })} />
+            </label>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

@@ -19,15 +19,29 @@ export type Product = {
   img: string;
   /** Hidden products stay in the admin but are not shown or sold in the shop. */
   hidden?: boolean;
+  /** Sold-out products stay in the shop with a "Sold out" label but can't be added to the cart. */
+  soldOut?: boolean;
 };
+
+export const OFFER_SCOPES = ["all", "collection", "product"] as const;
+export type OfferScope = (typeof OFFER_SCOPES)[number];
 
 export type Offer = {
   id: string;
+  /** Banner text at the top of every page. */
   text: string;
   /** Last day the offer is shown (YYYY-MM-DD). Empty = until removed. */
   until: string;
   active: boolean;
+  /** Percent taken off the price (1–90). 0 = banner only, prices unchanged. */
+  discount?: number;
+  /** What the discount applies to: every product, one collection or one product. */
+  scope?: OfferScope;
+  /** Collection id or product id when scope is "collection" or "product". */
+  target?: string;
 };
+
+export type Faq = { q: string; a: string };
 
 export type Site = {
   /** WhatsApp number in international format, digits only, e.g. 919000242480. */
@@ -73,13 +87,18 @@ export const CONTENT_FIELDS = [
   { group: "Why NutBytes", key: "benefit3Text", label: "Point 3 text", def: "A healthy bite anytime, anywhere.", max: 100 },
   { group: "About section", key: "aboutTitle", label: "Heading", def: "A Little Bite of Goodness", max: 80 },
   { group: "About section", key: "aboutText", label: "Text", def: "At NutBytes, we bring you healthy snacking crafted with care, using high-quality ingredients and a whole lot of love.", max: 400, long: true },
+  { group: "About page", key: "aboutPageLine", label: "Line under \"Our Story\"", def: "A little bite of goodness, from Ongole.", max: 120 },
+  { group: "About page", key: "aboutStory1", label: "Story, first paragraph", def: "NutBytes began with a simple idea: snacks can be delicious and wholesome at the same time. We make traditional sweets and treats with the finest nuts, seeds and dry fruits.", max: 600, long: true },
+  { group: "About page", key: "aboutStory2", label: "Story, second paragraph", def: "Every laddu, chikki, sunnunda and ariselu is made the traditional way, with no processed sugar and no maida. From festival boxes to everyday snacking, we want every bite to be a treat you can feel good about.", max: 600, long: true },
+  { group: "About page", key: "aboutGiftTitle", label: "Gifting heading", def: "Gifting with NutBytes", max: 80 },
+  { group: "About page", key: "aboutGiftText", label: "Gifting text", def: "Planning a festival, a wedding or a corporate gift? Tell us the occasion, how many boxes you need and the date, and we'll help you put together the right box.", max: 400, long: true },
   { group: "Footer", key: "footerBlurb", label: "Text under the logo", def: "Wholesome, delicious snacks for a healthier and happier you.", max: 160 },
 ] as const;
 
 /** Site photos the admin can swap. Empty = the built-in photo. */
 export const CONTENT_PHOTOS = [
   { key: "heroImg", label: "Top banner photo", def: "img/hero-banner.webp", hint: "Wide photo. Keep the left side plain: the heading sits there on computers." },
-  { key: "aboutImg", label: "About section photo", def: "img/about-packaging-v2.webp", hint: "Shown beside \"A Little Bite of Goodness\"." },
+  { key: "aboutImg", label: "About photo", def: "img/about-packaging-v2.webp", hint: "Shown beside \"A Little Bite of Goodness\" on the home page, and at the top of the About page." },
 ] as const;
 
 export type ContentKey = (typeof CONTENT_FIELDS)[number]["key"] | (typeof CONTENT_PHOTOS)[number]["key"];
@@ -108,6 +127,24 @@ export const DEFAULT_WEIGHTS: Weight[] = [
   { id: "1kg", label: "1 kg", factor: 3.6 },
 ];
 
+/** The questions on the Customer Care page (help.html), as built into the page. */
+export const DEFAULT_FAQS: Faq[] = [
+  { q: "Do your snacks contain sugar or maida?", a: "Our snacks are made with no processed sugar and no maida." },
+  {
+    q: "Where do you deliver?",
+    a: "We deliver in {deliveryArea}. If you're further away, message us on WhatsApp and we'll let you know.",
+  },
+  {
+    q: "Are the prices on the website final?",
+    a: "We confirm the final price, and any delivery charge, with you on WhatsApp before we pack your order.",
+  },
+  {
+    q: "Can I order gift boxes for an event?",
+    a: "Yes. Message us on WhatsApp with the occasion, the number of boxes and the date, and we'll help you plan it.",
+  },
+  { q: "Is NutBytes FSSAI registered?", a: "Yes. Our FSSAI registration number is {fssai}." },
+];
+
 export const emptyContent = (): Content =>
   Object.fromEntries([...CONTENT_FIELDS, ...CONTENT_PHOTOS].map((f) => [f.key, ""])) as Content;
 
@@ -118,6 +155,7 @@ export type Catalog = {
   collections: Collection[];
   weights: Weight[];
   content: Content;
+  faqs: Faq[];
 };
 
 const PREFIX = "window.NB_CATALOG = ";
@@ -136,6 +174,7 @@ export function parseCatalog(file: string | null): Catalog {
     collections: c.collections?.length ? c.collections : DEFAULT_COLLECTIONS,
     weights: c.weights?.length ? c.weights : DEFAULT_WEIGHTS,
     content: { ...emptyContent(), ...c.content },
+    faqs: Array.isArray(c.faqs) ? c.faqs : DEFAULT_FAQS,
   };
 }
 

@@ -23,7 +23,8 @@
   /* ---------------- cart ---------------- */
   const cleanCart = (items) =>
     (Array.isArray(items) ? items : [])
-      .filter((i) => NB.productById(i.id) && i.qty > 0)
+      // hidden and sold-out products drop out of the cart
+      .filter((i) => NB.productById(i.id) && !NB.productById(i.id).soldOut && i.qty > 0)
       // a pack size removed in /admin falls back to the first size
       .map((i) => (NB.WEIGHTS.some((w) => w.id === i.weight) ? i : { ...i, weight: NB.WEIGHTS[0].id }));
 
@@ -73,7 +74,8 @@
       const lines = this.items().map((i) => {
         const product = NB.productById(i.id);
         const unit = NB.priceFor(product, i.weight);
-        return { ...i, product, unit, total: unit * i.qty };
+        // off: the offer's percent, so the order message can say a discount was applied
+        return { ...i, product, unit, off: NB.discountFor(product), total: unit * i.qty };
       });
       return { lines, subtotal: lines.reduce((s, l) => s + l.total, 0) };
     },
@@ -129,7 +131,7 @@
         id,
         placedAt: d.toISOString(),
         status: "Waiting for WhatsApp confirmation",
-        items: lines.map((l) => ({ id: l.id, name: l.product.name, weight: l.weight, qty: l.qty, unit: l.unit, total: l.total })),
+        items: lines.map((l) => ({ id: l.id, name: l.product.name, weight: l.weight, qty: l.qty, unit: l.unit, off: l.off, total: l.total })),
         subtotal,
         details,
       };
@@ -162,7 +164,9 @@
     const d = order.details;
     const date = d.date ? d.date.split("-").reverse().join("/") : "";
     const items = order.items.map(
-      (i) => `• Product: ${i.name}, Weight: ${NB.weightById(i.weight).label}, Quantity: ${i.qty}, Price: ${NB.money(i.total)}`
+      (i) =>
+        `• Product: ${i.name}, Weight: ${NB.weightById(i.weight).label}, Quantity: ${i.qty}, Price: ${NB.money(i.total)}` +
+        (i.off ? ` (${i.off}% off)` : "")
     );
     const details = [
       `Order ID: ${order.id}`,

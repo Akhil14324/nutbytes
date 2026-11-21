@@ -41,8 +41,17 @@ The `assets/` folder is not in this repo; commit only the regenerated files in `
 Prices are intentionally not shown. The cart says "Price confirmed on WhatsApp".
 
 ## Admin panel (/admin)
-The client logs in at `/admin` to add, edit, reorder and remove menu items, add and remove offers
-(with an optional last day), and upload or delete photos. **Publish changes** makes ONE commit to
+The client logs in at `/admin` to manage the whole shop:
+- **Products:** add, edit, reorder, remove, hide, or mark as sold out (shown with a label, can't be added to the cart)
+- **Offers:** a banner line with an optional last day, and optionally a % discount for the whole shop, one
+  collection or one product. The shop shows the old price crossed out; the cart, checkout and WhatsApp order use
+  the offer price. Where two discounts overlap, the bigger one wins.
+- **Collections, pack sizes, business details** (WhatsApp number, phone, email, delivery area, FSSAI)
+- **Page text:** home page, About page and footer wording; the banner and About photos
+- **FAQs** on the Customer Care page (`{deliveryArea}`, `{fssai}`, `{phoneDisplay}`, `{email}` fill in the current details)
+- **Photos:** upload or delete (photos in use can't be deleted)
+
+Everything is saved in `public/data/catalog.js`. **Publish changes** makes ONE commit to
 this repo; Vercel redeploys and the site updates in about a minute. Every change is a Git commit,
 so it can be undone from GitHub.
 

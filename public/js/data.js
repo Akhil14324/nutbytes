@@ -59,8 +59,39 @@
   /** Label of the pack size prices are quoted for, e.g. "250 g". */
   NB.baseWeight = () => NB.WEIGHTS[0].label;
 
-  /** Price for a product at a given weight, rounded to the nearest rupee. */
-  NB.priceFor = (product, weightId) => Math.round(product.price * NB.weightById(weightId).factor);
+  /** Questions for the Customer Care page; null keeps the ones written in help.html. */
+  NB.FAQS = Array.isArray(CATALOG.faqs) ? CATALOG.faqs : null;
+
+  /** Biggest live discount (percent) that covers this product: whole shop, its collection, or the product itself. */
+  NB.discountFor = (product) =>
+    NB.LIVE_OFFERS.reduce((best, o) => {
+      const d = Number(o.discount) || 0;
+      if (d <= 0) return best;
+      const hit =
+        !o.scope ||
+        o.scope === "all" ||
+        (o.scope === "collection" && o.target === product.collection) ||
+        (o.scope === "product" && o.target === product.id);
+      return hit && d > best ? d : best;
+    }, 0);
+
+  /** Price before any offer, rounded to the nearest rupee. */
+  NB.fullPriceFor = (product, weightId) => Math.round(product.price * NB.weightById(weightId).factor);
+
+  /** Price the customer pays for a product at a given weight, after any offer. */
+  NB.priceFor = (product, weightId) => {
+    const full = NB.fullPriceFor(product, weightId);
+    const off = NB.discountFor(product);
+    return off ? Math.round((full * (100 - off)) / 100) : full;
+  };
 
   NB.money = (n) => NB.SITE.currency + Math.round(n).toLocaleString("en-IN");
+
+  /** Price as HTML: the offer price, with the old price crossed out when there is a discount. */
+  NB.priceHtml = (product, weightId, qty = 1) => {
+    const now = NB.priceFor(product, weightId) * qty;
+    if (!NB.discountFor(product)) return NB.money(now);
+    const was = NB.fullPriceFor(product, weightId) * qty;
+    return `${NB.money(now)} <s class="was"><span class="visually-hidden">was </span>${NB.money(was)}</s>`;
+  };
 })();
