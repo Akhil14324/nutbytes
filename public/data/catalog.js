@@ -3,7 +3,7 @@ window.NB_CATALOG = {
     {
       "id": "signature-dry-fruit-ladoo",
       "name": "Signature Dry Fruit Ladoo",
-      "collection": "nut-bites",
+      "collection": "laddus",
       "price": 299,
       "short": "Almonds, pistachios, pumpkin seeds and figs, pressed into every bite.",
       "badge": "Bestseller",
@@ -12,7 +12,7 @@ window.NB_CATALOG = {
     {
       "id": "royal-nut-sunnunda",
       "name": "Royal Nut Sunnunda",
-      "collection": "nut-bites",
+      "collection": "laddus",
       "price": 249,
       "short": "A rich, nutty sunnunda made the traditional way.",
       "badge": "",
@@ -21,7 +21,7 @@ window.NB_CATALOG = {
     {
       "id": "crunchy-peanut-laddu",
       "name": "Crunchy Peanut Laddu",
-      "collection": "nut-bites",
+      "collection": "laddus",
       "price": 149,
       "short": "Crunchy peanuts and dry fruit in a round, bite-sized laddu.",
       "badge": "",
@@ -30,7 +30,7 @@ window.NB_CATALOG = {
     {
       "id": "premium-peeled-peanut-chikki",
       "name": "Premium Peeled Peanut Chikki",
-      "collection": "nut-bites",
+      "collection": "chikkies",
       "price": 129,
       "short": "Peeled peanuts set into a crisp, golden chikki.",
       "badge": "",
@@ -39,7 +39,7 @@ window.NB_CATALOG = {
     {
       "id": "coconutty-ball",
       "name": "Coconutty Ball",
-      "collection": "coconut-bites",
+      "collection": "laddus",
       "price": 179,
       "short": "A soft, sweet ball rolled in fresh coconut.",
       "badge": "New",
@@ -48,7 +48,7 @@ window.NB_CATALOG = {
     {
       "id": "dry-fruits-coconut-burelu",
       "name": "Dry Fruits Coconut Burelu",
-      "collection": "coconut-bites",
+      "collection": "ariselu",
       "price": 219,
       "short": "Golden burelu with a sweet filling of coconut and dry fruit.",
       "badge": "",
@@ -57,7 +57,7 @@ window.NB_CATALOG = {
     {
       "id": "peanut-sesame-fusion",
       "name": "Peanut Sesame Fusion",
-      "collection": "seed-bites",
+      "collection": "spicy-munchies",
       "price": 139,
       "short": "Peanuts and sesame together in one crunchy bite.",
       "badge": "",
@@ -66,7 +66,7 @@ window.NB_CATALOG = {
     {
       "id": "nuvvulu-coated-dry-fruit-ariselu",
       "name": "Nuvvulu Coated Dry Fruit Ariselu",
-      "collection": "seed-bites",
+      "collection": "ariselu",
       "price": 229,
       "short": "Dry fruit ariselu with a crisp coat of sesame.",
       "badge": "",
@@ -75,12 +75,12 @@ window.NB_CATALOG = {
     {
       "id": "ghee-ariselu",
       "name": "Ghee Ariselu",
-      "collection": "seed-bites",
+      "collection": "ariselu",
       "price": 199,
       "short": "Traditional Andhra ariselu, made with pure ghee.",
       "badge": "",
       "img": "img/products/ghee-ariselu.webp"
     }
   ],
-  "offers": []
+  "offers": [{"id":"festival-orders","text":"Now accepting orders for Christmas Eve and Sankranti — reserve your festive boxes","until":"","active":true}]
 };

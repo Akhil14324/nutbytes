@@ -3,9 +3,10 @@
 export const CATALOG_FILE = "public/data/catalog.js";
 
 export const COLLECTIONS = [
-  { id: "nut-bites", name: "Nut Bites" },
-  { id: "coconut-bites", name: "Coconut Bites" },
-  { id: "seed-bites", name: "Seed Bites" },
+  { id: "laddus", name: "Laddus" },
+  { id: "chikkies", name: "Chikkies" },
+  { id: "ariselu", name: "Ariselu" },
+  { id: "spicy-munchies", name: "Spicy Munchies" },
 ] as const;
 
 export type Product = {

@@ -19,32 +19,34 @@
 
   NB.COLLECTIONS = [
     {
-      id: "nut-bites",
-      name: "Nut Bites",
-      line: "Crunchy, Nutty & Satisfying",
-      img: "img/bite-nut.webp",
+      id: "laddus",
+      name: "Laddus",
+      line: "Traditional favourites, made wholesome",
+      img: "img/products/signature-dry-fruit-ladoo.webp",
       tone: "blush",
     },
     {
-      id: "coconut-bites",
-      name: "Coconut Bites",
-      line: "A Natural Energy Boost",
-      img: "img/bite-coconut.webp",
+      id: "chikkies",
+      name: "Chikkies",
+      line: "Crisp, nutty and golden",
+      img: "img/products/premium-peeled-peanut-chikki.webp",
       tone: "peach",
     },
     {
-      id: "seed-bites",
-      name: "Seed Bites",
-      line: "Packed with Goodness",
-      img: "img/bite-seed.webp",
+      id: "ariselu",
+      name: "Ariselu",
+      line: "Andhra tradition with ghee and sesame",
+      img: "img/products/ghee-ariselu.webp",
       tone: "lilac",
     },
+    { id: "spicy-munchies", name: "Spicy Munchies", line: "Savoury bites for every tea-time", img: "img/bite-seed.webp", tone: "peach" },
   ];
 
   /* Weights a customer can choose, and how the price scales from the 250 g price. */
   NB.WEIGHTS = [
     { id: "250g", label: "250 g", factor: 1 },
     { id: "500g", label: "500 g", factor: 1.9 },
+    { id: "750g", label: "750 g", factor: 2.8 },
     { id: "1kg", label: "1 kg", factor: 3.6 },
   ];
 

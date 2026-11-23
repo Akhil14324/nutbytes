@@ -22,6 +22,7 @@
     const grid = $("[data-collections]");
     grid.innerHTML = NB.COLLECTIONS.map(
       (c) => `<article class="collection-card tone-${c.tone}" data-reveal>
+        <div class="folder-tab"></div><span class="folder-label">Explore collection</span>
         <h3><a class="stretched" href="products.html?c=${c.id}">${esc(c.name)}</a></h3>
         <img src="${c.img}" alt="" width="200" height="160" loading="lazy" />
         <div class="collection-card-foot">
@@ -30,6 +31,14 @@
         </div>
       </article>`
     ).join("");
+    const choices = $("#gift-treats");
+    if (choices) {
+      const items = NB.PRODUCTS.filter((p) => ["laddus", "chikkies", "ariselu"].includes(p.collection));
+      const selected = []; const size = $("#gift-size"); const preview = $("#gift-box-view");
+      const render = () => { const cap=Number(size.value); preview.style.setProperty("--slots",cap); preview.innerHTML=Array.from({length:cap},(_,i)=>selected[i]?`<div class="gift-slot"><img src="${esc(selected[i].img)}" alt="${esc(selected[i].name)}"></div>`:`<div class="gift-slot empty">+</div>`).join(""); $("#gift-count").textContent=`${selected.length} of ${cap} treats added`; $("#gift-preview-title").textContent=`Your ${size.selectedOptions[0].text.toLowerCase()} box`; $("#gift-customize").href=NB.waLink(`Hello NutBytes! Please customize a ${size.selectedOptions[0].text} gift box. Treats: ${selected.map(p=>p.name).join(", ")||"please suggest a mix"}.`); };
+      choices.innerHTML=items.map(p=>`<button type="button" data-gift="${esc(p.id)}"><img src="${esc(p.img)}" alt=""><span>${esc(p.name)}</span><b>+</b></button>`).join("");
+      choices.addEventListener("click",e=>{const id=e.target.closest("[data-gift]")?.dataset.gift;if(!id)return;const cap=Number(size.value);if(selected.length>=cap)selected.shift();selected.push(NB.productById(id));render();});size.addEventListener("change",()=>{selected.length=Math.min(selected.length,Number(size.value));render();});render();
+    }
   }
 
   /* ------------------------------------------------------------ shop */
