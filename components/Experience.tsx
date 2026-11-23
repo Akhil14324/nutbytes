@@ -15,6 +15,7 @@ import Marquee from "./Marquee";
 import Menu from "./Menu";
 import Occasions from "./Occasions";
 import OfferStrip from "./OfferStrip";
+import Ingredients from "./Ingredients";
 
 function SmoothScroll() {
   // Keep the page layout steady: ignore the phone address bar sliding in and out, and
@@ -89,6 +90,7 @@ export default function Experience() {
           <Marquee />
           <OfferStrip />
           <Menu />
+          <Ingredients />
           <Occasions />
         </main>
         <Footer />

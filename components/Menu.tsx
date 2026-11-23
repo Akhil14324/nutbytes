@@ -20,6 +20,8 @@ export default function Menu() {
   const [active, setActive] = useState(0);
   const [sel, setSel] = useState<Record<string, { w: Weight; q: number }>>({});
   const [flash, setFlash] = useState<string | null>(null);
+  const [category, setCategory] = useState("All treats");
+  const categories = ["All treats", ...Array.from(new Set(PRODUCTS.map((x) => x.category)))];
 
   useGSAP(
     () => {
@@ -111,11 +113,17 @@ export default function Menu() {
 
         <div className="menu-panel">
           <div className="field">
+            <span className="field-label">Pick your treats</span>
+            <div className="chips category-chips" aria-label="Treat category">
+              {categories.map((c) => <button key={c} className={`chip${category === c ? " is-on" : ""}`} onClick={() => { setCategory(c); const first = c === "All treats" ? 0 : PRODUCTS.findIndex((x) => x.category === c); if (first >= 0) go(first); }}>{c}</button>)}
+            </div>
+          </div>
+          <div className="field">
             <span className="field-label" id="w-label">
               {t("menu.weight")}
             </span>
             <div className="chips" role="radiogroup" aria-labelledby="w-label">
-              {WEIGHTS.map((w) => (
+              {(p.weights || WEIGHTS).map((w) => (
                 <button
                   key={w}
                   role="radio"

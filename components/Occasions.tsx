@@ -79,6 +79,7 @@ export default function Occasions() {
           </div>
         </div>
       </section>
+      <section className="founder-story"><p className="ingredient-kicker">From our family to yours</p><h2 className="section-title">A little tradition in every bite.</h2><p>NutBytes brings the familiar joy of Andhra sweets together with the goodness of nuts and dry fruits. Made thoughtfully in Ongole, and shared best with the people you love.</p></section>
     </div>
   );
 }

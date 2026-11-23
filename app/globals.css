@@ -348,6 +348,8 @@ button {
   background-repeat: no-repeat;
   box-shadow: 0 30px 60px -30px rgba(59, 42, 32, 0.45);
 }
+.hero-banner { transition: background-image 0.9s ease; }
+.hero-banner::after { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; background:rgba(190, 105, 127, .36); mix-blend-mode:color; }
 /* dark on the left where the text sits, fading out so the fruit stays bright */
 .hero-banner::before {
   content: "";
@@ -1505,6 +1507,22 @@ html[lang="te"] .footer-line {
   color: var(--ivory);
   text-align: center;
 }
+.category-chips { margin-bottom: 6px; }
+.ingredients { display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:40px; padding:clamp(72px,10vw,140px) var(--gutter); background:#fbf7f0; }
+.ingredients-heading { justify-self:end; max-width:520px; }
+.ingredients-heading p:last-child,.founder-story p:last-child { color:var(--muted); max-width:44ch; font-size:1.08rem; }
+.ingredient-kicker { color:#a75d6e; text-transform:uppercase; letter-spacing:.16em; font-size:.78rem; font-weight:800; }
+.ingredient-orbit { width:min(78vw,480px); aspect-ratio:1; justify-self:start; position:relative; display:grid; place-items:center; }
+.orbit-ring { position:absolute; inset:12%; border:1px solid rgba(167,93,110,.28); border-radius:50%; animation:orbit-spin 42s linear infinite; }
+.ingredient-item { position:absolute; left:50%; top:50%; width:112px; display:grid; justify-items:center; gap:8px; transform:rotate(calc(var(--i)*60deg)) translateY(-190px) rotate(calc(var(--i)*-60deg)); font-size:.78rem; font-weight:700; text-align:center; }
+.ingredient-photo { position:relative; width:76px; height:76px; border-radius:50%; overflow:hidden; border:4px solid #fff; box-shadow:0 8px 22px #3b2a201f; }
+.ingredient-photo img { object-fit:cover; }
+.orbit-center { display:grid; place-items:center; width:112px; height:112px; border-radius:50%; background:#f2d7dc; color:#713c49; text-align:center; font-family:var(--font-d); font-size:1.2rem; line-height:1.1; }
+@keyframes orbit-spin { to { transform:rotate(360deg); } }
+.founder-story { padding:clamp(70px,11vw,150px) var(--gutter); text-align:center; background:var(--blush); }
+.founder-story .section-title { margin:auto; }
+.founder-story p:last-child { margin:22px auto 0; }
+@media(max-width:760px){.ingredients{grid-template-columns:1fr;text-align:center}.ingredients-heading,.ingredient-orbit{justify-self:center}.ingredient-item{transform:rotate(calc(var(--i)*60deg)) translateY(-145px) rotate(calc(var(--i)*-60deg));width:90px}.ingredient-photo{width:64px;height:64px}.ingredient-orbit{width:min(85vw,380px)}}
 .offer-tag {
   flex: none;
   padding: 3px 12px;

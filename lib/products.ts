@@ -9,9 +9,11 @@ export type Product = {
   img: string;
   /** Background tint the menu section fades to while this item is showing. */
   tint: string;
+  category: string;
+  weights: Weight[];
 };
 
-export const WEIGHTS = ["250g", "500g", "1kg"] as const;
+export const WEIGHTS = ["250g", "500g", "750g", "1kg"] as const;
 export type Weight = (typeof WEIGHTS)[number];
 
 // The menu lives in data/products.json and is edited from /admin.

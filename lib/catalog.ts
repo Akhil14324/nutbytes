@@ -29,7 +29,8 @@ export type Offer = {
   active: boolean;
 };
 
-export type Catalog = { products: Product[]; offers: Offer[] };
+export type HeroSlide = { id: string; image: string; eyebrow: string; title: string; body: string; video?: string };
+export type Catalog = { products: Product[]; offers: Offer[]; hero?: HeroSlide[]; ingredients?: string[] };
 
 const PREFIX = "window.NB_CATALOG = ";
 
@@ -38,7 +39,7 @@ export function parseCatalog(file: string | null): Catalog {
   const body = file.trim().replace(/;$/, "");
   if (!body.startsWith(PREFIX)) throw new Error("catalog.js has an unexpected format.");
   const c = JSON.parse(body.slice(PREFIX.length)) as Partial<Catalog>;
-  return { products: c.products ?? [], offers: c.offers ?? [] };
+  return { products: c.products ?? [], offers: c.offers ?? [], hero: c.hero ?? [], ingredients: c.ingredients ?? [] };
 }
 
 export function serializeCatalog(c: Catalog): string {
