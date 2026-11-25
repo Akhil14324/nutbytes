@@ -2173,8 +2173,8 @@ html.intro-pending body {
   html {
     scroll-behavior: auto;
   }
-  /* the offers ticker and the spinning bowls keep moving: the owner wants them always animated */
-  *:not(.ticker-track):not(.ingredient-slot img),
+  /* the offers ticker, the spinning bowls and the why-NutBytes strip keep moving: the owner wants them always animated */
+  *:not(.ticker-track):not(.ingredient-slot img):not(.why-track),
   *::before,
   *::after {
     animation: none !important;
@@ -2186,7 +2186,7 @@ html.intro-pending body {
   }
 }
 
-.why-marquee{overflow:hidden;background:#f5e4e7;padding:22px 0}.why-track{display:flex;align-items:center;gap:28px;width:max-content;animation:why-move 34s linear infinite;font:600 clamp(1.1rem,2vw,1.6rem) var(--font-display);color:#713c49}.why-track b{color:#bc6b81}@keyframes why-move{to{transform:translateX(-50%)}}
+.why-marquee{overflow:hidden;background:#f5e4e7;padding:22px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}.why-group{display:flex;flex:none;align-items:center;gap:28px;padding-right:28px}.why-track{display:flex;align-items:center;width:max-content;animation:why-move 40s linear infinite;font:600 clamp(1.1rem,2vw,1.6rem) var(--font-display);color:#713c49}.why-track b{color:#bc6b81}@keyframes why-move{to{transform:translateX(-50%)}}
 .ingredient-section{padding:80px 0;background:#fffaf7}.ingredient-layout{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:40px}.ingredient-layout h2,.gift-builder h2{font:600 clamp(2rem,4vw,3.1rem) var(--font-display);color:#713c49}.ingredient-layout p:not(.eyebrow){margin-top:15px;color:var(--ink-soft);max-width:45ch}.ingredient-wheel{display:grid;place-items:center}@keyframes ingredient-turn{to{transform:rotate(360deg)}}
 /* The circle itself (pink ring, white centre, logo) never moves, and the bowls keep their places:
    each bowl just spins on its own spot.
