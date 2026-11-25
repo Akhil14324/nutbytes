@@ -9,12 +9,14 @@
   const toggle = root.querySelector("[data-carousel-toggle]");
   const toggleLabel = root.querySelector("[data-toggle-label]");
   const status = root.querySelector("[data-carousel-status]");
-  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const imageDuration = 5000;
 
   let index = 0;
   let inView = false;
-  let userPaused = reduceMotion;
+  // starts playing on every device (also with "reduce motion" on: the owner wants the videos to run)
+  let userPaused = false;
+  // set when the browser refuses to autoplay (e.g. iPhone Low Power Mode); the first tap anywhere retries
+  let autoplayBlocked = false;
   let pointerStart = null;
   let imageTimer = null;
 
@@ -23,9 +25,23 @@
   }
 
   function loadVideo(video) {
-    if (!video || video.src) return;
+    if (!video || video.getAttribute("src")) return;
+    // muted + inline are what phones require before they allow a video to play by itself
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.preload = "auto";
     video.src = video.dataset.src;
     video.load();
+  }
+
+  /** Start loading the slide after this one, so the next video is ready when its turn comes. */
+  function preloadNext() {
+    const next = slides[(index + 1) % slides.length].querySelector("video");
+    loadVideo(next);
   }
 
   function clearImageTimer() {
@@ -60,10 +76,21 @@
     }
 
     loadVideo(video);
-    video.play().then(() => setPausedState(false)).catch(() => {
-      userPaused = true;
-      setPausedState(true);
-    });
+    const attempt = video.play();
+    if (!attempt || !attempt.then) return setPausedState(false);
+    attempt
+      .then(() => {
+        autoplayBlocked = false;
+        setPausedState(false);
+        preloadNext();
+      })
+      .catch(() => {
+        // the browser would not autoplay: keep the slideshow going on the poster image,
+        // and play for real as soon as the visitor taps anywhere on the page
+        autoplayBlocked = true;
+        setPausedState(false);
+        imageTimer = window.setTimeout(() => show(index + 1), imageDuration);
+      });
   }
 
   function show(nextIndex) {
@@ -151,6 +178,17 @@
     if (document.hidden) pauseCurrent();
     else playCurrent();
   });
+
+  // the first tap / click / key anywhere counts as permission to play: retry a blocked video then
+  const unlock = () => {
+    if (autoplayBlocked && !userPaused) playCurrent();
+  };
+  ["touchstart", "pointerdown", "keydown"].forEach((type) =>
+    document.addEventListener(type, unlock, { passive: true, capture: true })
+  );
+
+  // load the first video straight away so it is ready the moment the slideshow reaches it
+  loadVideo(slides.map((s) => s.querySelector("video")).find(Boolean));
 
   setPausedState(userPaused);
 })();
