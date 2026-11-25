@@ -47,10 +47,57 @@
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   NB.esc = esc;
 
-  /** Banner for offers switched on in /admin. */
-  function offerStrip() {
-    if (!NB.LIVE_OFFERS || !NB.LIVE_OFFERS.length) return "";
-    return `<div class="offer-strip" role="status">${NB.LIVE_OFFERS.map((o) => `<span>${esc(o.text)}</span>`).join("")}</div>`;
+  /* ---------- announcement ticker (white bar under the header) ---------- */
+  NB.ANNOUNCEMENT =
+    "Special Offers Available Until December 31, 2026 • FREE Shipping on Eligible Orders • Premium Quality Nuts & Dry Fruits • Order Now!";
+
+  /** The full line: the announcement, then any offers switched on in /admin. */
+  const tickerText = () =>
+    [NB.ANNOUNCEMENT, ...(NB.LIVE_OFFERS || []).map((o) => o.text)].filter(Boolean).join(" • ");
+
+  /** Screen readers and reduced-motion users get one still copy; the moving line is decoration. */
+  function ticker() {
+    const text = esc(tickerText());
+    return `<div class="ticker" role="region" aria-label="Announcements">
+      <p class="ticker-still">${text}</p>
+      <div class="ticker-window" aria-hidden="true"><span class="ticker-line">${text}</span></div>
+    </div>`;
+  }
+
+  /**
+   * The line only shows inside .ticker-window, a clipped area in the middle of the bar
+   * (the white space either side stays empty). CSS slides it from the window's right edge
+   * until it has fully left through the window's left edge, then it starts again.
+   * This only sets the duration, so the text moves at the same readable speed on every screen.
+   */
+  function setupTicker() {
+    const bar = document.querySelector(".ticker");
+    if (!bar) return;
+    const win = bar.querySelector(".ticker-window");
+    const line = bar.querySelector(".ticker-line");
+    let lastWidth = 0;
+
+    const fill = () => {
+      const width = bar.clientWidth;
+      if (!width || width === lastWidth) return;
+      lastWidth = width;
+      // the line's own width = the window (its left padding) + the text
+      const travel = line.getBoundingClientRect().width;
+      // hidden (reduced motion shows the still copy instead): nothing to time
+      if (!travel || !win.clientWidth) return void (lastWidth = 0);
+      // pixels per second: slower on small screens so it stays readable
+      const speed = width < 600 ? 50 : width < 1024 ? 65 : 80;
+      line.style.setProperty("--ticker-duration", `${(travel / speed).toFixed(2)}s`);
+    };
+
+    fill();
+    // re-measure once the web fonts are in, and when the screen width changes
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ((lastWidth = 0), fill()));
+    let t;
+    window.addEventListener("resize", () => {
+      clearTimeout(t);
+      t = setTimeout(fill, 150);
+    });
   }
 
   function header(page) {
@@ -214,7 +261,7 @@
           ? found
               .map(
                 (p) => `<li><a href="product.html?id=${p.id}"><img src="${p.img}" alt="" width="52" height="52" loading="lazy" />
-                  <span><b>${esc(p.name)}</b><small>${NB.money(p.price)} · ${esc(NB.collectionById(p.collection).name)}</small></span></a></li>`
+                  <span><b>${esc(p.name)}</b><small>${NB.money(NB.priceFor(p, NB.weightsFor(p)[0].id))} / ${NB.weightsFor(p)[0].label} · ${esc(NB.collectionById(p.collection).name)}</small></span></a></li>`
               )
               .join("") + `<li class="search-all"><a href="products.html?q=${encodeURIComponent(q)}">See all results ${NB.icon.arrow(16)}</a></li>`
           : `<li class="search-empty">No snacks match “${esc(q)}”.</li>`;
@@ -267,6 +314,8 @@
   /** Product card used by the shop grid and "you may also like". */
   NB.productCard = (p) => {
     const c = NB.collectionById(p.collection);
+    // the smallest pack this product is sold in (250 g, or e.g. 500 g for fixed-price products)
+    const w = NB.weightsFor(p)[0];
     return `<article class="product-card tone-${c.tone}" data-reveal>
       <a class="product-card-img" href="product.html?id=${p.id}">
         <img src="${p.img}" alt="${esc(p.name)}" width="400" height="400" loading="lazy" />
@@ -277,21 +326,22 @@
         <h3><a href="product.html?id=${p.id}">${esc(p.name)}</a></h3>
         <p>${esc(p.short)}</p>
         <div class="product-card-foot">
-          <span class="price">${NB.money(p.price)} <small>/ 250 g</small></span>
+          <span class="price">${NB.money(NB.priceFor(p, w.id))} <small>/ ${w.label}</small></span>
           <button class="btn btn-brown btn-sm" type="button" data-add="${p.id}" aria-label="Add ${esc(p.name)} to cart">Add ${NB.icon.plus(14)}</button>
         </div>
       </div>
     </article>`;
   };
 
-  /** Any [data-add] button adds the 250 g pack of that product. */
+  /** Any [data-add] button adds the smallest pack that product is sold in. */
   function setupQuickAdd() {
     document.addEventListener("click", (e) => {
       const b = e.target.closest("[data-add]");
       if (!b) return;
       const p = NB.productById(b.dataset.add);
-      NB.cart.add(p.id, NB.WEIGHTS[0].id, 1);
-      NB.toast(`${p.name} (250 g) added to your cart`);
+      const w = NB.weightsFor(p)[0];
+      NB.cart.add(p.id, w.id, 1);
+      NB.toast(`${p.name} (${w.label}) added to your cart`);
       b.classList.add("is-added");
       setTimeout(() => b.classList.remove("is-added"), 900);
     });
@@ -303,8 +353,9 @@
     const page = document.body.dataset.nav || document.body.dataset.page || "";
     const h = document.getElementById("site-header");
     const f = document.getElementById("site-footer");
-    if (h) h.outerHTML = offerStrip() + header(page);
+    if (h) h.outerHTML = header(page) + ticker();
     if (f) f.outerHTML = footer();
+    setupTicker();
     updateCount();
     setupSearch();
     setupMenu();

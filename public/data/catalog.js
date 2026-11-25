@@ -2,84 +2,146 @@ window.NB_CATALOG = {
   "products": [
     {
       "id": "signature-dry-fruit-ladoo",
-      "name": "Signature Dry Fruit Ladoo",
+      "name": "Our Signature Dry Fruit Laddu",
       "collection": "laddus",
-      "price": 299,
+      "price": 625,
+      "prices": {
+        "500g": 1250,
+        "1kg": 2500
+      },
       "short": "Almonds, pistachios, pumpkin seeds and figs, pressed into every bite.",
       "badge": "Bestseller",
-      "img": "img/products/signature-dry-fruit-ladoo.webp"
+      "img": "img/products/signature-dry-fruit-ladoo-full.webp"
+    },
+    {
+      "id": "coconutty-ball",
+      "name": "Our Top Selling Coconutty Laddu",
+      "collection": "laddus",
+      "price": 275,
+      "prices": {
+        "500g": 550,
+        "1kg": 1000
+      },
+      "short": "A soft, sweet laddu rolled in fresh coconut.",
+      "badge": "Top seller",
+      "img": "img/products/coconutty-laddu.webp"
+    },
+    {
+      "id": "nut-loaded-ghee-ariselu",
+      "name": "Nut Loaded Traditional Pure Ghee Ariselu",
+      "collection": "ariselu",
+      "price": 225,
+      "prices": {
+        "500g": 450,
+        "1kg": 850
+      },
+      "short": "Traditional pure ghee ariselu, topped with almonds and pistachios.",
+      "badge": "",
+      "img": "img/products/nut-loaded-ghee-ariselu.webp"
+    },
+    {
+      "id": "ghee-ariselu",
+      "name": "Traditional Pure Ghee Ariselu",
+      "collection": "ariselu",
+      "price": 200,
+      "prices": {
+        "500g": 400,
+        "1kg": 750
+      },
+      "short": "Traditional Andhra ariselu, made with pure ghee.",
+      "badge": "",
+      "img": "img/products/traditional-ghee-ariselu.webp"
+    },
+    {
+      "id": "nuvvulu-coated-dry-fruit-ariselu",
+      "name": "Sesame Coated Traditional Pure Ghee Ariselu",
+      "collection": "ariselu",
+      "price": 238,
+      "prices": {
+        "500g": 475,
+        "1kg": 800
+      },
+      "short": "Traditional pure ghee ariselu with a crisp coat of sesame.",
+      "badge": "",
+      "img": "img/products/sesame-coated-ghee-ariselu.webp"
     },
     {
       "id": "royal-nut-sunnunda",
       "name": "Royal Nut Sunnunda",
       "collection": "laddus",
-      "price": 249,
+      "price": 225,
+      "prices": {
+        "500g": 450,
+        "1kg": 850
+      },
       "short": "A rich, nutty sunnunda made the traditional way.",
       "badge": "",
-      "img": "img/products/royal-nut-sunnunda.webp"
+      "img": "img/products/royal-nut-sunnunda-full.webp"
     },
     {
       "id": "crunchy-peanut-laddu",
-      "name": "Crunchy Peanut Laddu",
+      "name": "Crunchy Protein Laddu",
       "collection": "laddus",
-      "price": 149,
-      "short": "Crunchy peanuts and dry fruit in a round, bite-sized laddu.",
+      "price": 200,
+      "prices": {
+        "500g": 400,
+        "1kg": 750
+      },
+      "short": "Made with peanuts, gond and jaggery.",
       "badge": "",
-      "img": "img/products/crunchy-peanut-laddu.webp"
+      "img": "img/products/crunchy-protein-laddu.webp"
     },
     {
-      "id": "premium-peeled-peanut-chikki",
-      "name": "Premium Peeled Peanut Chikki",
+      "id": "premium-chikki",
+      "name": "Premium Chikki",
       "collection": "chikkies",
-      "price": 129,
-      "short": "Peeled peanuts set into a crisp, golden chikki.",
+      "price": 400,
+      "prices": {
+        "500g": 800,
+        "1kg": 1500
+      },
+      "short": "Our premium chikki, crisp and golden.",
       "badge": "",
-      "img": "img/products/premium-peeled-peanut-chikki.webp"
-    },
-    {
-      "id": "coconutty-ball",
-      "name": "Coconutty Ball",
-      "collection": "laddus",
-      "price": 179,
-      "short": "A soft, sweet ball rolled in fresh coconut.",
-      "badge": "New",
-      "img": "img/products/coconutty-ball.webp"
-    },
-    {
-      "id": "dry-fruits-coconut-burelu",
-      "name": "Dry Fruits Coconut Burelu",
-      "collection": "ariselu",
-      "price": 219,
-      "short": "Golden burelu with a sweet filling of coconut and dry fruit.",
-      "badge": "",
-      "img": "img/products/dry-fruits-coconut-burelu.webp"
+      "img": "img/products/premium-chikki.webp"
     },
     {
       "id": "peanut-sesame-fusion",
       "name": "Peanut Sesame Fusion",
+      "collection": "chikkies",
+      "price": 200,
+      "prices": {
+        "500g": 400,
+        "1kg": 750
+      },
+      "short": "Peanuts and sesame together in one crunchy chikki.",
+      "badge": "",
+      "img": "img/products/peanut-sesame-fusion-chikki.webp"
+    },
+    {
+      "id": "premium-peeled-peanut-chikki",
+      "name": "Peanut Chikki",
+      "collection": "chikkies",
+      "price": 200,
+      "prices": {
+        "500g": 400,
+        "1kg": 750
+      },
+      "short": "Peanuts set into a crisp, golden chikki.",
+      "badge": "",
+      "img": "img/products/peanut-chikki.webp"
+    },
+    {
+      "id": "spiced-nuts",
+      "name": "Spiced Nuts",
       "collection": "spicy-munchies",
-      "price": 139,
-      "short": "Peanuts and sesame together in one crunchy bite.",
+      "price": 400,
+      "prices": {
+        "500g": 800,
+        "1kg": 1500
+      },
+      "short": "Spiced nuts for a savoury tea-time bite.",
       "badge": "",
-      "img": "img/products/peanut-sesame-fusion.webp"
-    },
-    {
-      "id": "nuvvulu-coated-dry-fruit-ariselu",
-      "name": "Nuvvulu Coated Dry Fruit Ariselu",
-      "collection": "ariselu",
-      "price": 229,
-      "short": "Dry fruit ariselu with a crisp coat of sesame.",
-      "badge": "",
-      "img": "img/products/nuvvulu-coated-dry-fruit-ariselu.webp"
-    },
-    {
-      "id": "ghee-ariselu",
-      "name": "Ghee Ariselu",
-      "collection": "ariselu",
-      "price": 199,
-      "short": "Traditional Andhra ariselu, made with pure ghee.",
-      "badge": "",
-      "img": "img/products/ghee-ariselu.webp"
+      "img": "img/products/spiced-nuts.webp"
     }
   ],
   "offers": [{"id":"festival-orders","text":"Now accepting orders for Christmas Eve and Sankranti — reserve your festive boxes","until":"","active":true}]

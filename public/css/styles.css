@@ -576,7 +576,8 @@ ul {
   min-height: 520px;
   max-height: 880px;
   padding: clamp(40px, 4vw, 64px) 0;
-  background: #9f3f59;
+  /* the photo's own peach-pink, shown only while it loads */
+  background: #fcd5cc;
   -webkit-mask: url("../img/hero-brush.svg") center / 100% 100% no-repeat;
   mask: url("../img/hero-brush.svg") center / 100% 100% no-repeat;
 }
@@ -587,7 +588,7 @@ ul {
   height: 100%;
   object-fit: cover;
   object-position: 72% 50%;
-  filter: sepia(.12) saturate(.82) hue-rotate(295deg) brightness(.9);
+  /* no colour filter: the photo shows in its own warm peach-pink */
 }
 .hero-photo .hero-inner {
   position: relative;
@@ -598,17 +599,18 @@ ul {
 }
 .hero-photo h1 {
   font-size: clamp(2rem, 3.5vw, 3.4rem);
-  color: #fff8f3;
+  /* dark text, readable on the light peach photo */
+  color: var(--wine);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 .hero-photo h1 .sub {
-  color: #ffe0e7;
+  color: #b24a63;
 }
 .hero-photo h1 .heart {
   color: var(--rose-ink);
 }
 .hero-photo .hero-text {
-  color: #fff4f0;
+  color: var(--ink);
   font-weight: 400;
 }
 .hero-photo + .benefits {
@@ -690,6 +692,13 @@ ul {
 /* ---------- collection cards ---------- */
 .collections {
   padding: clamp(20px, 3vw, 36px) 0 clamp(56px, 7vw, 88px);
+}
+/* on the home page the cards follow the benefits row straight away, with no extra gap */
+.benefits:has(+ .collections) {
+  padding-bottom: clamp(12px, 1.6vw, 20px);
+}
+.benefits + .collections {
+  padding-top: clamp(8px, 1vw, 12px);
 }
 .collection-grid {
   display: grid;
@@ -2018,9 +2027,13 @@ html.intro-pending body {
     border-top: 1px solid var(--line);
   }
   .collection-grid {
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0, 1fr): two equal columns even when a long name like "Spicy Munchies" is wider than half */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
     margin-inline: auto;
+  }
+  .collection-card h3 {
+    overflow-wrap: anywhere;
   }
   .about-inner {
     grid-template-columns: 1fr;
@@ -2124,20 +2137,170 @@ html.intro-pending body {
   }
 }
 
-/* offers banner (edited in /admin) */
-.offer-strip{overflow:hidden;flex-wrap:nowrap;white-space:nowrap;justify-content:flex-start;background:#9f3f59;min-height:40px}.offer-strip span{animation:offer-slide 20s linear infinite}@keyframes offer-slide{to{transform:translateX(-30vw)}}
 .why-marquee{overflow:hidden;background:#f5e4e7;padding:22px 0}.why-track{display:flex;align-items:center;gap:28px;width:max-content;animation:why-move 34s linear infinite;font:600 clamp(1.1rem,2vw,1.6rem) var(--font-display);color:#713c49}.why-track b{color:#bc6b81}@keyframes why-move{to{transform:translateX(-50%)}}
-.ingredient-section{padding:80px 0;background:#fffaf7}.ingredient-layout{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:40px}.ingredient-layout h2,.gift-builder h2{font:600 clamp(2rem,4vw,3.1rem) var(--font-display);color:#713c49}.ingredient-layout p:not(.eyebrow){margin-top:15px;color:var(--ink-soft);max-width:45ch}.ingredient-wheel{display:grid;place-items:center}.ingredient-wheel-inner{width:min(70vw,360px);aspect-ratio:1;border-radius:50%;position:relative;animation:ingredient-turn 32s linear infinite;background:radial-gradient(circle,#fff 35%,#f5dce2 36%,#fff3f4 68%,#fff 69%)}.ingredient-wheel-inner img{position:absolute;width:28%;height:28%;object-fit:cover;border-radius:50%;box-shadow:var(--shadow);animation:ingredient-turn 32s linear infinite reverse}.ingredient-wheel-inner img:nth-child(1){top:0;left:36%}.ingredient-wheel-inner img:nth-child(2){right:0;top:36%}.ingredient-wheel-inner img:nth-child(3){bottom:0;left:36%}.ingredient-wheel-inner img:nth-child(4){left:0;top:36%}.ingredient-wheel-inner strong{position:absolute;inset:42%;text-align:center;color:#8e4b60;font:600 1.2rem var(--font-display)}@keyframes ingredient-turn{to{transform:rotate(360deg)}}
+.ingredient-section{padding:80px 0;background:#fffaf7}.ingredient-layout{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:40px}.ingredient-layout h2,.gift-builder h2{font:600 clamp(2rem,4vw,3.1rem) var(--font-display);color:#713c49}.ingredient-layout p:not(.eyebrow){margin-top:15px;color:var(--ink-soft);max-width:45ch}.ingredient-wheel{display:grid;place-items:center}@keyframes ingredient-turn{to{transform:rotate(360deg)}}
+/* The circle itself (pink ring, white centre, logo) never moves. Only .ingredient-orbit turns,
+   and each nut turns back the other way at the same speed, so it stays upright as it orbits.
+   width: never wider than its column (or the screen), so it can't push the page sideways. */
+.ingredient-wheel-inner {
+  position: relative;
+  width: min(100%, 360px, 86vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 35%, #f5dce2 36%, #fff3f4 68%, #fff 69%);
+}
+/* the turning layer's square box gets wider at 45°; it's invisible, but keep it from
+   making the page scroll sideways */
+.ingredient-section {
+  overflow-x: clip;
+}
+.ingredient-orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: ingredient-turn 32s linear infinite;
+  will-change: transform;
+}
+/* Nuts and dry fruits, evenly spaced on the middle of the pink ring.
+   --n = how many there are, --i = each one's place. Each slot is placed at the wheel's centre,
+   turned to its angle, pushed out to the ring and turned back, so it starts upright.
+   Sizes are % of the wheel: slot 15% wide, ring radius 36.5% (= 243% of the slot's own height),
+   so the items sit between the logo (radius 22%) and the ring's outer edge (radius 48%). */
+.ingredient-slot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15%;
+  aspect-ratio: 1;
+  margin: -7.5% 0 0 -7.5%;
+  --a: calc(360deg / var(--n, 8) * var(--i, 0));
+  transform: rotate(var(--a)) translateY(-243%) rotate(calc(-1 * var(--a)));
+}
+/* each one turns back as fast as the ring turns, so it stays upright while it orbits */
+.ingredient-slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 8px rgba(111, 39, 53, 0.22));
+  animation: ingredient-turn 32s linear infinite reverse;
+}
+/* the NutBytes logo: a separate, fixed element in the white centre, always upright */
+.ingredient-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  object-fit: contain;
+  background: #fff;
+  box-shadow: 0 6px 18px -10px rgba(111, 39, 53, 0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ingredient-orbit,
+  .ingredient-orbit img {
+    animation: none;
+  }
+}
 .gift-builder{padding:80px 0;background:#f8e9e8}.gift-builder>div>p:not(.eyebrow){margin:10px 0 30px;color:var(--ink-soft)}.gift-builder-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px}.gift-size-label{display:grid;gap:6px;max-width:200px;font-weight:600}.gift-size-label select{padding:12px;border:1px solid var(--line);border-radius:12px;background:white}.gift-treats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}.gift-treats button{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:14px;background:white;text-align:left}.gift-treats img{width:52px;height:52px;object-fit:cover;border-radius:10px}.gift-treats b{margin-left:auto;color:#9f3f59}.gift-preview{padding:24px;border-radius:20px;background:#fff;box-shadow:var(--shadow-sm)}.gift-preview h3{font:600 1.4rem var(--font-display)}.gift-box-view{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:350px;margin:18px auto;padding:14px;border-radius:12px;background:linear-gradient(145deg,#d9a56e,#a96d45);box-shadow:inset 0 0 0 5px #e7c69e}.gift-slot{aspect-ratio:1;border-radius:50%;background:#f8e7d4;display:grid;place-items:center;overflow:hidden}.gift-slot img{width:100%;height:100%;object-fit:cover}.gift-slot.empty{color:#c4a37c}.gift-preview>p{margin-bottom:12px;text-align:center;color:var(--ink-soft)}.gift-preview .btn{display:flex;width:max-content;margin:auto}
 @media(max-width:760px){.ingredient-layout,.gift-builder-grid{grid-template-columns:1fr;text-align:center}.gift-size-label{margin:auto;text-align:left}.gift-preview{margin-top:10px}}
-.offer-strip {
+/* ---------- announcement ticker: white bar under the header, scrolls right to left ---------- */
+.ticker {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  overflow: hidden; /* nothing outside the bar, and no scrollbar */
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  background: #fff;
+  border-top: 1px solid rgba(111, 39, 53, 0.08);
+  border-bottom: 1px solid rgba(111, 39, 53, 0.12);
   justify-content: center;
-  gap: 4px 24px;
-  padding: 8px 16px;
-  background: #5a3a2a;
-  color: #fef5f0;
-  font-size: 0.875rem;
-  text-align: center;
+  color: #000;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+/* The text only shows inside this middle window: it appears at the window's right edge
+   (middle-right of the bar) and disappears at its left edge (middle-left), so the white
+   space on both sides stays empty. Computers: 30%–70% of the bar. */
+.ticker-window {
+  --ticker-window: 40%;
+  width: var(--ticker-window);
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+/* padding-left: 100% (of the window) puts the text just past the window's right edge.
+   Sliding by -100% of the line's own width (window + text) carries the end of the text
+   just past the window's left edge, so it has fully gone before the loop starts again. */
+.ticker-line {
+  flex: none;
+  display: inline-block;
+  padding-left: 100%;
+  animation: ticker-move var(--ticker-duration, 20s) linear infinite;
+  will-change: transform;
+}
+/* pause while the mouse is over the bar (or a keyboard user focuses into it) */
+.ticker:hover .ticker-line,
+.ticker:focus-within .ticker-line {
+  animation-play-state: paused;
+}
+@keyframes ticker-move {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+/* tablets: 20%–80% of the bar */
+@media (max-width: 1024px) {
+  .ticker-window {
+    --ticker-window: 60%;
+  }
+}
+/* one still copy for screen readers; shown instead of the moving line for reduced motion */
+.ticker-still {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .ticker {
+    height: 42px;
+    font-size: 0.875rem;
+  }
+  /* phones: 10%–90% of the bar, so enough of the line shows to read */
+  .ticker-window {
+    --ticker-window: 80%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker {
+    height: auto;
+    min-height: 44px;
+    justify-content: center;
+    padding: 8px 16px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .ticker-window {
+    display: none;
+  }
+  .ticker-still {
+    position: static;
+    width: auto;
+    height: auto;
+    clip: auto;
+    white-space: normal;
+  }
 }

@@ -64,8 +64,23 @@
   NB.collectionById = (id) => NB.COLLECTIONS.find((c) => c.id === id);
   NB.weightById = (id) => NB.WEIGHTS.find((w) => w.id === id) || NB.WEIGHTS[0];
 
-  /** Price for a product at a given weight, rounded to the nearest rupee. */
-  NB.priceFor = (product, weightId) => Math.round(product.price * NB.weightById(weightId).factor);
+  /** Pack sizes sold for a product. A product with its own "prices" is sold only in those sizes. */
+  NB.weightsFor = (product) => {
+    const own = product && product.prices ? NB.WEIGHTS.filter((w) => product.prices[w.id]) : [];
+    return own.length ? own : NB.WEIGHTS;
+  };
+  /** A pack size this product is sold in: the one asked for if available, otherwise its first size. */
+  NB.weightFor = (product, weightId) => {
+    const list = NB.weightsFor(product);
+    return list.find((w) => w.id === weightId) || list[0];
+  };
+
+  /** Price for a product at a given weight: its own price for that pack if set,
+   * otherwise the 250 g price scaled for the pack, rounded to the nearest rupee. */
+  NB.priceFor = (product, weightId) => {
+    const own = product.prices && product.prices[weightId];
+    return own ? own : Math.round(product.price * NB.weightById(weightId).factor);
+  };
 
   NB.money = (n) => NB.SITE.currency + Math.round(n).toLocaleString("en-IN");
 })();

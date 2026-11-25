@@ -14,8 +14,8 @@
       el.removeAttribute("data-icon");
     });
 
-  const weightOptions = (selected) =>
-    NB.WEIGHTS.map((w) => `<option value="${w.id}"${w.id === selected ? " selected" : ""}>${w.label}</option>`).join("");
+  const weightOptions = (selected, product) =>
+    NB.weightsFor(product).map((w) => `<option value="${w.id}"${w.id === selected ? " selected" : ""}>${w.label}</option>`).join("");
 
   /* ------------------------------------------------------------ home */
   function home() {
@@ -128,7 +128,7 @@
         <form data-buy>
           <span class="option-label" id="w-label">Choose a pack</span>
           <div class="weights" role="radiogroup" aria-labelledby="w-label">
-            ${NB.WEIGHTS.map(
+            ${NB.weightsFor(p).map(
               (w, i) => `<label><input type="radio" name="weight" value="${w.id}"${i === 0 ? " checked" : ""} /><span>${w.label}</span></label>`
             ).join("")}
           </div>
@@ -210,7 +210,7 @@
               <h3><a href="product.html?id=${l.id}">${esc(l.product.name)}</a></h3>
               <p class="cart-item-meta">${NB.money(l.unit)} each</p>
               <div class="cart-item-ctl">
-                <select data-weight-select aria-label="Pack size for ${esc(l.product.name)}">${weightOptions(l.weight)}</select>
+                <select data-weight-select aria-label="Pack size for ${esc(l.product.name)}">${weightOptions(l.weight, l.product)}</select>
                 <div class="stepper sm" role="group" aria-label="Quantity of ${esc(l.product.name)}">
                   <button type="button" data-step="-1" aria-label="Decrease quantity">${NB.icon.minus(14)}</button>
                   <output aria-live="polite">${l.qty}</output>
