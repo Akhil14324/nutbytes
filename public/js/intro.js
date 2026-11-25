@@ -2,7 +2,7 @@
  *   1. the hero photo (bites on a pink cake stand) pushes in and washes out to cream
  *   2. the badge's ring of nuts swirls into place and the centre pops in, with a soft shine
  *   3. the badge flies up into the header logo while the page fades in underneath
- * Plays once per browser session, can be skipped with a click or any key, and is
+ * Plays at most once a day on each device (remembered in localStorage), can be skipped with a click or any key, and is
  * skipped entirely for people who prefer reduced motion. */
 (function () {
   const NB = (window.NB = window.NB || {});
@@ -11,7 +11,8 @@
 
   let seen = false;
   try {
-    seen = sessionStorage.getItem(KEY) === "1";
+    // the time it last played; it stays quiet for a day after that, across reloads and new tabs
+    seen = Date.now() - Number(localStorage.getItem(KEY) || 0) < 24 * 60 * 60 * 1000;
   } catch {}
   const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   // ?intro=1 replays it, handy for testing
@@ -27,7 +28,7 @@
   // wait for layout.js to put the header in place (the badge lands on its logo)
   document.addEventListener("nb:ready", () => {
     try {
-      sessionStorage.setItem(KEY, "1");
+      localStorage.setItem(KEY, String(Date.now()));
     } catch {}
 
     const el = document.createElement("div");
