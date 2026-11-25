@@ -2,21 +2,13 @@
  *   1. the hero photo (bites on a pink cake stand) pushes in and washes out to cream
  *   2. the badge's ring of nuts swirls into place and the centre pops in, with a soft shine
  *   3. the badge flies up into the header logo while the page fades in underneath
- * Plays at most once a day on each device (remembered in localStorage), can be skipped with a click or any key, and is
- * skipped entirely for people who prefer reduced motion. */
+ * Plays on every load of the home page (the owner wants it every time, even with reduced
+ * motion switched on). It can be skipped with a click or any key; ?nointro turns it off for testing. */
 (function () {
   const NB = (window.NB = window.NB || {});
-  const KEY = "nb-intro-seen";
   const params = new URLSearchParams(location.search);
 
-  let seen = false;
-  try {
-    // the time it last played; it stays quiet for a day after that, across reloads and new tabs
-    seen = Date.now() - Number(localStorage.getItem(KEY) || 0) < 24 * 60 * 60 * 1000;
-  } catch {}
-  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // ?intro=1 replays it, handy for testing
-  const play = params.get("intro") === "1" || (!seen && !reduce && !params.has("nointro"));
+  const play = !params.has("nointro");
   if (!play || !("animate" in Element.prototype)) return;
 
   // hide the page until the overlay is up, so it never flashes
@@ -27,9 +19,6 @@
 
   // wait for layout.js to put the header in place (the badge lands on its logo)
   document.addEventListener("nb:ready", () => {
-    try {
-      localStorage.setItem(KEY, String(Date.now()));
-    } catch {}
 
     const el = document.createElement("div");
     el.className = "intro";
