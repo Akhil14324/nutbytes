@@ -37,8 +37,8 @@
     el.innerHTML = `
       <div class="intro-scene" aria-hidden="true">
         <picture>
-          <source media="(max-width: 860px)" srcset="img/hero-banner-mobile.webp" />
-          <img class="intro-photo" src="img/hero-banner.webp" srcset="img/hero-banner-960.webp 960w, img/hero-banner.webp 1671w" sizes="100vw" alt="" />
+          <source media="(max-width: 860px)" srcset="img/hero-rose-brown-mobile.webp" />
+          <img class="intro-photo" src="img/hero-rose-brown.webp" srcset="img/hero-rose-brown-960.webp 960w, img/hero-rose-brown.webp 1671w" sizes="100vw" alt="" />
         </picture>
         <div class="intro-sun"></div>
       </div>

@@ -20,12 +20,12 @@
     <link
       rel="preload"
       as="image"
-      href="img/hero-banner.webp"
-      imagesrcset="img/hero-banner-960.webp 960w, img/hero-banner.webp 1671w"
+      href="img/hero-rose-brown.webp"
+      imagesrcset="img/hero-rose-brown-960.webp 960w, img/hero-rose-brown.webp 1671w"
       imagesizes="100vw"
       media="(min-width: 861px)"
     />
-    <link rel="preload" as="image" href="img/hero-banner-mobile.webp" media="(max-width: 860px)" />
+    <link rel="preload" as="image" href="img/hero-rose-brown-mobile.webp" media="(max-width: 860px)" />
     <link rel="preload" as="image" href="img/logo-ring.webp" />
     <link rel="preload" as="image" href="img/logo-core.webp" />
     <link rel="stylesheet" href="css/styles.css" />
@@ -36,26 +36,90 @@
     <div id="site-header"></div>
 
     <main>
-      <section class="hero hero-photo" aria-labelledby="hero-title">
-        <picture class="hero-bg">
-          <source media="(max-width: 860px)" srcset="img/hero-banner-mobile.webp" />
-          <img
-            src="img/hero-banner.webp"
-            srcset="img/hero-banner-960.webp 960w, img/hero-banner.webp 1671w"
-            sizes="100vw"
-            alt="Nut, seed and coconut bites on a pink cake stand, with almonds, cashews and flowers"
-            width="1671"
-            height="941"
-            fetchpriority="high"
-          />
-        </picture>
-        <div class="hero-inner">
-          <div class="hero-copy" data-reveal>
-            <h1 id="hero-title">
-              Perfect for every celebration
-            </h1>
-            <p class="hero-text">Nutritious sweets and treats, handcrafted with love.</p>
-            <a class="btn btn-brown" href="products.html">Explore Our Snacks <span data-icon="arrow"></span></a>
+      <section class="hero hero-photo hero-carousel" aria-labelledby="hero-title">
+        <div class="story-carousel-shell" data-video-carousel tabindex="0" aria-roledescription="carousel" aria-label="NutBytes highlights">
+          <div class="story-carousel-viewport">
+            <div class="story-carousel-track">
+              <article class="story-slide hero-image-slide is-active" aria-hidden="false">
+                <picture class="hero-bg">
+                  <source media="(max-width: 860px)" srcset="img/hero-rose-brown-mobile.webp" />
+                  <img
+                    src="img/hero-rose-brown.webp"
+                    srcset="img/hero-rose-brown-960.webp 960w, img/hero-rose-brown.webp 1671w"
+                    sizes="100vw"
+                    alt="Nut, seed and coconut bites on a pink cake stand, with almonds, cashews and flowers"
+                    width="1671"
+                    height="941"
+                    fetchpriority="high"
+                  />
+                </picture>
+                <div class="hero-inner">
+                  <div class="hero-copy" data-reveal>
+                    <h1 id="hero-title">SWEET MOMENTS<br />START HERE</h1>
+                    <p class="hero-text">
+                      Deliciously handcrafted sweets and treats made with love<br />
+                      Perfect for every celebration<br />
+                      &amp; Corporate Gifting
+                    </p>
+                    <a class="btn btn-brown" href="products.html">Explore Our Snacks <span data-icon="arrow"></span></a>
+                  </div>
+                </div>
+              </article>
+              <article class="story-slide story-video-slide story-video-slide-1" aria-hidden="true">
+                <video
+                  class="story-video"
+                  muted
+                  playsinline
+                  preload="none"
+                  poster="video/nutbytes-story-1-poster.jpg"
+                  data-src="video/nutbytes-story-1.mp4"
+                  aria-label="Coconut bites arranged on a serving plate"
+                ></video>
+              </article>
+              <article class="story-slide story-video-slide story-video-slide-2" aria-hidden="true">
+                <video
+                  class="story-video"
+                  muted
+                  playsinline
+                  preload="none"
+                  poster="video/nutbytes-story-2-poster.jpg"
+                  data-src="video/nutbytes-story-2.mp4"
+                  aria-label="Nut and dry-fruit bites in a serving bowl"
+                ></video>
+              </article>
+              <article class="story-slide story-video-slide story-video-slide-3" aria-hidden="true">
+                <video
+                  class="story-video"
+                  muted
+                  playsinline
+                  preload="none"
+                  poster="video/nutbytes-story-3-poster.jpg"
+                  data-src="video/nutbytes-story-3.mp4"
+                  aria-label="A freshly prepared sesame sweet shown by hand"
+                ></video>
+              </article>
+            </div>
+          </div>
+
+          <button class="story-carousel-arrow story-carousel-prev" type="button" data-carousel-prev aria-label="Previous slide">
+            <span data-icon="arrow"></span>
+          </button>
+          <button class="story-carousel-arrow story-carousel-next" type="button" data-carousel-next aria-label="Next slide">
+            <span data-icon="arrow"></span>
+          </button>
+
+          <div class="story-carousel-footer">
+            <div class="story-carousel-dots" role="group" aria-label="Choose a slide">
+              <button class="is-active" type="button" data-slide-to="0" aria-label="Show hero image" aria-current="true"></button>
+              <button type="button" data-slide-to="1" aria-label="Show video 1"></button>
+              <button type="button" data-slide-to="2" aria-label="Show video 2"></button>
+              <button type="button" data-slide-to="3" aria-label="Show video 3"></button>
+            </div>
+            <button class="story-carousel-toggle" type="button" data-carousel-toggle aria-label="Pause video carousel">
+              <span class="story-toggle-icon" aria-hidden="true"></span>
+              <span data-toggle-label>Pause</span>
+            </button>
+            <p class="visually-hidden" aria-live="polite" data-carousel-status>Slide 1 of 4</p>
           </div>
         </div>
       </section>
@@ -75,6 +139,13 @@
             <div>
               <h3>No Preservatives</h3>
               <p>Pure, natural and honest snacking.</p>
+            </div>
+          </li>
+          <li data-reveal>
+            <span class="benefit-icon chef" data-icon="chef"></span>
+            <div>
+              <h3>Freshly Made to Order</h3>
+              <p>Prepared fresh after you order—never held as ready-made stock.</p>
             </div>
           </li>
           <li data-reveal>
@@ -128,5 +199,6 @@
     <script src="js/store.js"></script>
     <script src="js/layout.js"></script>
     <script src="js/pages.js"></script>
+    <script src="js/video-carousel.js"></script>
   </body>
 </html>
