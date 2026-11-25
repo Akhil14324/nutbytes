@@ -2192,7 +2192,7 @@ html.intro-pending body {
    width: never wider than its column (or the screen), so it can't push the page sideways. */
 .ingredient-wheel-inner {
   position: relative;
-  width: min(100%, 360px, 86vw);
+  width: min(100%, 420px, 90vw);
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle, #fff 35%, #f5dce2 36%, #fff3f4 68%, #fff 69%);
@@ -2212,17 +2212,17 @@ html.intro-pending body {
 /* Nuts and dry fruits, evenly spaced on the middle of the pink ring.
    --n = how many there are, --i = each one's place. Each slot is placed at the wheel's centre,
    turned to its angle, pushed out to the ring and turned back, so it starts upright.
-   Sizes are % of the wheel: slot 15% wide, ring radius 36.5% (= 243% of the slot's own height),
+   Sizes are % of the wheel: bowl 20% wide, ring radius 36.5% (= 182.5% of the bowl's own height),
    so the items sit between the logo (radius 22%) and the ring's outer edge (radius 48%). */
 .ingredient-slot {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 15%;
+  width: 20%;
   aspect-ratio: 1;
-  margin: -7.5% 0 0 -7.5%;
+  margin: -10% 0 0 -10%;
   --a: calc(360deg / var(--n, 8) * var(--i, 0));
-  transform: rotate(var(--a)) translateY(-243%) rotate(calc(-1 * var(--a)));
+  transform: rotate(var(--a)) translateY(-182.5%) rotate(calc(-1 * var(--a)));
 }
 /* each one turns back as fast as the ring turns, so it stays upright while it orbits */
 .ingredient-slot img {
