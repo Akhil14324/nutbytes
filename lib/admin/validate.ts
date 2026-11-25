@@ -33,7 +33,7 @@ export function cleanProducts(input: unknown): Product[] {
     const price = Number(r.price);
     if (!Number.isInteger(price) || price < 1 || price > 100000)
       throw new Invalid(`${label} needs a whole-rupee price between 1 and 100000.`);
-    return {
+    const product: Product = {
       id,
       name: str(r.name, `${label} name`, 80),
       collection,
@@ -42,6 +42,21 @@ export function cleanProducts(input: unknown): Product[] {
       badge: str(r.badge ?? "", `${label} label`, 20, false),
       img,
     };
+    // fixed pack prices (set in catalog.js) are kept on every publish
+    if (r.prices != null) {
+      if (typeof r.prices !== "object" || Array.isArray(r.prices)) throw new Invalid(`${product.name}: invalid pack prices.`);
+      const entries = Object.entries(r.prices as Record<string, unknown>);
+      if (entries.length > 8) throw new Invalid(`${product.name}: too many pack prices.`);
+      const prices: Record<string, number> = {};
+      for (const [size, v] of entries) {
+        const n = Number(v);
+        if (!/^[a-z0-9-]+$/.test(size) || !Number.isInteger(n) || n < 1 || n > 1000000)
+          throw new Invalid(`${product.name}: invalid price for the ${size} pack.`);
+        prices[size] = n;
+      }
+      if (entries.length) product.prices = prices;
+    }
+    return product;
   });
 }
 

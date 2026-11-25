@@ -20,6 +20,9 @@ export type Product = {
   badge: string;
   /** Site-relative photo path, e.g. img/products/x.webp (no leading slash). */
   img: string;
+  /** Fixed price per pack size id (e.g. { "500g": 1250, "1kg": 2500 }). When set, the product is
+   * sold only in these sizes at these prices, and `price` is used only for sorting. */
+  prices?: Record<string, number>;
 };
 
 export type Offer = {

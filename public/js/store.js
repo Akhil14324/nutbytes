@@ -22,7 +22,10 @@
 
   /* ---------------- cart ---------------- */
   const cleanCart = (items) =>
-    (Array.isArray(items) ? items : []).filter((i) => NB.productById(i.id) && i.qty > 0);
+    (Array.isArray(items) ? items : [])
+      .filter((i) => NB.productById(i.id) && i.qty > 0)
+      // a pack size this product isn't sold in (e.g. an old 250 g line) moves to its first size
+      .map((i) => ({ ...i, weight: NB.weightFor(NB.productById(i.id), i.weight).id }));
 
   NB.cart = {
     items: () => cleanCart(read(KEYS.cart, [])),
