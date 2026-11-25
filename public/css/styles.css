@@ -2173,7 +2173,8 @@ html.intro-pending body {
   html {
     scroll-behavior: auto;
   }
-  *,
+  /* the offers ticker keeps scrolling: the owner wants the offers always moving */
+  *:not(.ticker-track),
   *::before,
   *::after {
     animation: none !important;
@@ -2616,7 +2617,7 @@ html.intro-pending body {
   }
 }
 
-/* ---------- announcement ticker: white bar under the header, scrolls right to left ---------- */
+/* ---------- announcement ticker: white bar under the header, endless right-to-left strip ---------- */
 .ticker {
   position: relative;
   width: 100%;
@@ -2627,37 +2628,37 @@ html.intro-pending body {
   background: #fff;
   border-top: 1px solid rgba(111, 39, 53, 0.08);
   border-bottom: 1px solid rgba(111, 39, 53, 0.12);
-  justify-content: center;
-  color: #000;
-  font-weight: 700;
+  color: #2b1a1d;
+  font-weight: 600;
   font-size: 0.9375rem;
   line-height: 1;
   white-space: nowrap;
+  /* soft fade at both ends so points glide in and out */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }
-/* The text only shows inside this middle window: it appears at the window's right edge
-   (middle-right of the bar) and disappears at its left edge (middle-left), so the white
-   space on both sides stays empty. Computers: 30%–70% of the bar. */
-.ticker-window {
-  --ticker-window: 40%;
-  width: var(--ticker-window);
-  height: 100%;
-  overflow: hidden;
+/* two identical groups side by side; sliding left by one group's width loops seamlessly.
+   It keeps moving even with "reduce motion" on: the owner wants the offers always scrolling. */
+.ticker-track {
   display: flex;
-  align-items: center;
-}
-/* padding-left: 100% (of the window) puts the text just past the window's right edge.
-   Sliding by -100% of the line's own width (window + text) carries the end of the text
-   just past the window's left edge, so it has fully gone before the loop starts again. */
-.ticker-line {
   flex: none;
-  display: inline-block;
-  padding-left: 100%;
-  animation: ticker-move var(--ticker-duration, 20s) linear infinite;
+  animation: ticker-move var(--ticker-duration, 30s) linear infinite;
   will-change: transform;
 }
-/* pause while the mouse is over the bar (or a keyboard user focuses into it) */
-.ticker:hover .ticker-line,
-.ticker:focus-within .ticker-line {
+.ticker-group {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+.ticker-item {
+  padding: 0 28px;
+}
+.ticker-dot {
+  color: #c0607a;
+  font-size: 0.75em;
+}
+/* pause while the mouse is over the bar */
+.ticker:hover .ticker-track {
   animation-play-state: paused;
 }
 @keyframes ticker-move {
@@ -2665,16 +2666,10 @@ html.intro-pending body {
     transform: translateX(0);
   }
   to {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
-/* tablets: 20%–80% of the bar */
-@media (max-width: 1024px) {
-  .ticker-window {
-    --ticker-window: 60%;
-  }
-}
-/* one still copy for screen readers; shown instead of the moving line for reduced motion */
+/* one still copy for screen readers */
 .ticker-still {
   position: absolute;
   width: 1px;
@@ -2688,29 +2683,7 @@ html.intro-pending body {
     height: 42px;
     font-size: 0.875rem;
   }
-  /* phones: 10%–90% of the bar, so enough of the line shows to read */
-  .ticker-window {
-    --ticker-window: 80%;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ticker {
-    height: auto;
-    min-height: 44px;
-    justify-content: center;
-    padding: 8px 16px;
-    white-space: normal;
-    text-align: center;
-    line-height: 1.4;
-  }
-  .ticker-window {
-    display: none;
-  }
-  .ticker-still {
-    position: static;
-    width: auto;
-    height: auto;
-    clip: auto;
-    white-space: normal;
+  .ticker-item {
+    padding: 0 20px;
   }
 }

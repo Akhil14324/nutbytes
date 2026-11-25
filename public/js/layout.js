@@ -50,46 +50,55 @@
   NB.esc = esc;
 
   /* ---------- announcement ticker (white bar under the header) ---------- */
-  NB.ANNOUNCEMENT =
-    "Special Offers Available Until December 31, 2026 • FREE Shipping on Eligible Orders • Premium Quality Nuts & Dry Fruits • Order Now!";
+  NB.ANNOUNCEMENTS = [
+    "Special Offers Available Until December 31, 2026",
+    "FREE Shipping on Eligible Orders",
+    "Premium Quality Nuts & Dry Fruits",
+    "Order Now!",
+  ];
 
-  /** The full line: the announcement, then any offers switched on in /admin. */
-  const tickerText = () =>
-    [NB.ANNOUNCEMENT, ...(NB.LIVE_OFFERS || []).map((o) => o.text)].filter(Boolean).join(" • ");
+  /** Every point on the bar: the announcements, then any offers switched on in /admin. */
+  const tickerItems = () =>
+    [...NB.ANNOUNCEMENTS, ...(NB.LIVE_OFFERS || []).map((o) => o.text)].filter(Boolean);
 
-  /** Screen readers and reduced-motion users get one still copy; the moving line is decoration. */
+  const tickerGroup = (items) =>
+    items.map((t) => `<span class="ticker-item">${esc(t)}</span><span class="ticker-dot">✦</span>`).join("");
+
+  /** Screen readers get one still copy; the moving strip is decoration. */
   function ticker() {
-    const text = esc(tickerText());
+    const items = tickerItems();
     return `<div class="ticker" role="region" aria-label="Announcements">
-      <p class="ticker-still">${text}</p>
-      <div class="ticker-window" aria-hidden="true"><span class="ticker-line">${text}</span></div>
+      <p class="ticker-still">${esc(items.join(" • "))}</p>
+      <div class="ticker-track" aria-hidden="true"><div class="ticker-group">${tickerGroup(items)}</div></div>
     </div>`;
   }
 
   /**
-   * The line only shows inside .ticker-window, a clipped area in the middle of the bar
-   * (the white space either side stays empty). CSS slides it from the window's right edge
-   * until it has fully left through the window's left edge, then it starts again.
-   * This only sets the duration, so the text moves at the same readable speed on every screen.
+   * Endless strip: one group of points is repeated until it is wider than the bar, then the
+   * whole group is copied once more. The track slides left by exactly one group's width and
+   * starts again, so the join is invisible and the line never runs out.
    */
   function setupTicker() {
     const bar = document.querySelector(".ticker");
     if (!bar) return;
-    const win = bar.querySelector(".ticker-window");
-    const line = bar.querySelector(".ticker-line");
+    const track = bar.querySelector(".ticker-track");
+    const items = tickerItems();
     let lastWidth = 0;
 
     const fill = () => {
       const width = bar.clientWidth;
       if (!width || width === lastWidth) return;
       lastWidth = width;
-      // the line's own width = the window (its left padding) + the text
-      const travel = line.getBoundingClientRect().width;
-      // hidden (reduced motion shows the still copy instead): nothing to time
-      if (!travel || !win.clientWidth) return void (lastWidth = 0);
+      track.innerHTML = `<div class="ticker-group">${tickerGroup(items)}</div>`;
+      const first = track.firstElementChild;
+      const once = first.innerHTML;
+      let guard = 0;
+      while (first.getBoundingClientRect().width < width && guard++ < 20) first.insertAdjacentHTML("beforeend", once);
+      track.appendChild(first.cloneNode(true));
+      const groupWidth = first.getBoundingClientRect().width;
       // pixels per second: slower on small screens so it stays readable
-      const speed = width < 600 ? 50 : width < 1024 ? 65 : 80;
-      line.style.setProperty("--ticker-duration", `${(travel / speed).toFixed(2)}s`);
+      const speed = width < 600 ? 45 : width < 1024 ? 60 : 70;
+      track.style.setProperty("--ticker-duration", `${(groupWidth / speed).toFixed(2)}s`);
     };
 
     fill();
