@@ -22,14 +22,14 @@
       id: "laddus",
       name: "Laddus",
       line: "Traditional favourites, made wholesome",
-      img: "img/products/signature-dry-fruit-ladoo.webp",
+      img: "img/collection-laddus.webp",
       tone: "blush",
     },
     {
       id: "chikkies",
       name: "Chikkies",
       line: "Crisp, nutty and golden",
-      img: "img/products/premium-peeled-peanut-chikki.webp",
+      img: "img/collection-chikkies.webp",
       tone: "peach",
     },
     {
@@ -39,7 +39,7 @@
       img: "img/products/ghee-ariselu.webp",
       tone: "lilac",
     },
-    { id: "spicy-munchies", name: "Spicy Munchies", line: "Savoury bites for every tea-time", img: "img/bite-seed.webp", tone: "peach" },
+    { id: "spicy-munchies", name: "Spicy Munchies", line: "Savoury bites for every tea-time", img: "img/collection-spicy-munchies.webp", tone: "peach" },
   ];
 
   /* Weights a customer can choose, and how the price scales from the 250 g price. */
